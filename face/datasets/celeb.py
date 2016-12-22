@@ -32,7 +32,7 @@ def get_celeb_datasets():
     ]
 
     data_directory = "../../data/faces/"
-    shutil.rmtree(data_directory, ignore_errors=True)
+    # shutil.rmtree(data_directory, ignore_errors=True)
     os.makedirs(data_directory, exist_ok=True)
 
     for url in image_archives_urls:

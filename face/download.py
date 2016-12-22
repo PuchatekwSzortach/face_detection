@@ -8,7 +8,7 @@ import urllib.error
 import tqdm
 
 
-def get_url_asset_size(url, urlopen=urllib.request.urlopen):
+def get_url_asset_size(url, url_opener=urllib.request.urlopen):
     """
     Get size of asset under a url
     :param url: url to look for
@@ -16,7 +16,7 @@ def get_url_asset_size(url, urlopen=urllib.request.urlopen):
     :return: asset size in bytes
     """
 
-    with urlopen(url) as url_connection:
+    with url_opener(url) as url_connection:
 
         metadata = url_connection.info()
         return int(metadata["Content-Length"])
@@ -27,7 +27,7 @@ class Downloader:
     A simple class supports downloading large files with retries.
     """
 
-    def __init__(self, url, path, max_retries=5):
+    def __init__(self, url, path, max_retries=5, url_opener=urllib.request.urlopen):
         """
         Constructor
         :param url: url to download from
@@ -42,31 +42,33 @@ class Downloader:
         self.reties_count = 0
 
         self.downloaded_bytes_count = 0
-        self.total_bytes_count = get_url_asset_size(self.url)
+        self.total_bytes_count = get_url_asset_size(self.url, url_opener=url_opener)
 
         self.bytes_per_read = 8192
 
-    def download(self):
+    def download(self, url_request=urllib.request.Request, url_opener=urllib.request.urlopen, file_opener=open):
 
         print("Downloading {}".format(self.url))
 
         header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
-        request = urllib.request.Request(url=self.url, headers=header)
+        request = url_request(url=self.url, headers=header)
 
         flags = "wb" if self.downloaded_bytes_count is 0 else "ab"
 
-        with urllib.request.urlopen(request) as url_connection, open(self.path, mode=flags) as file, \
-            tqdm.tqdm(total=self.total_bytes_count) as progress_bar:
+        with url_opener(request) as url_connection, file_opener(self.path, mode=flags) as file, \
+                tqdm.tqdm(total=self.total_bytes_count) as progress_bar:
 
             progress_bar.update(self.downloaded_bytes_count)
 
-            bytes = url_connection.read(self.bytes_per_read)
+            data = url_connection.read(self.bytes_per_read)
 
-            while len(bytes) > 0:
+            print()
+            print("Data is: {} and has length {}".format(data, len(data)))
 
-                file.write(bytes)
-                self.downloaded_bytes_count += len(bytes)
-                progress_bar.update(len(bytes))
+            while len(data) != 0:
 
-                bytes = url_connection.read(self.bytes_per_read)
-                
+                file.write(data)
+                self.downloaded_bytes_count += len(data)
+                progress_bar.update(len(data))
+
+                data = url_connection.read(self.bytes_per_read)
