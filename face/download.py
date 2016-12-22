@@ -55,20 +55,33 @@ class Downloader:
 
         flags = "wb" if self.downloaded_bytes_count is 0 else "ab"
 
-        with url_opener(request) as url_connection, file_opener(self.path, mode=flags) as file, \
-                tqdm.tqdm(total=self.total_bytes_count) as progress_bar:
+        try:
 
-            progress_bar.update(self.downloaded_bytes_count)
+            with url_opener(request) as url_connection, file_opener(self.path, mode=flags) as file, \
+                    tqdm.tqdm(total=self.total_bytes_count) as progress_bar:
 
-            data = url_connection.read(self.bytes_per_read)
-
-            print()
-            print("Data is: {} and has length {}".format(data, len(data)))
-
-            while len(data) != 0:
-
-                file.write(data)
-                self.downloaded_bytes_count += len(data)
-                progress_bar.update(len(data))
+                progress_bar.update(self.downloaded_bytes_count)
 
                 data = url_connection.read(self.bytes_per_read)
+
+                print()
+                print("Data is: {} and has length {}".format(data, len(data)))
+
+                while len(data) != 0:
+
+                    file.write(data)
+                    self.downloaded_bytes_count += len(data)
+                    progress_bar.update(len(data))
+
+                    data = url_connection.read(self.bytes_per_read)
+
+        except TimeoutError as error:
+
+            if self.reties_count < self.max_retries:
+
+                self.reties_count += 1
+                self.download(url_request, url_opener, file_opener)
+
+            else:
+
+                raise error
