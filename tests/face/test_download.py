@@ -1,6 +1,7 @@
 """
 Tests for face.download module
 """
+import itertools
 
 import mock
 import urllib.error
@@ -29,19 +30,20 @@ class TestDownloader:
     def setup_method(self, method):
 
         self.mock_url_opener = mock.mock_open()
-        self.mock_file_opener = mock.mock_open()
+        self.mock_url_context = self.mock_url_opener.return_value.__enter__.return_value
 
-        self.context = self.mock_url_opener.return_value.__enter__.return_value
+        self.mock_file_opener = mock.mock_open()
+        self.mock_file_context = self.mock_file_opener.return_value.__enter__.return_value
 
         self.mock_url_request = mock.Mock()
 
     def test_downloader_simple_one_read_download(self):
 
-        self.context.info = mock.Mock(return_value={"Content-Length": "10"})
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "10"})
 
         # Data return by context
         packet = 10 * [1]
-        self.context.read.side_effect = [packet, []]
+        self.mock_url_context.read.side_effect = [packet, []]
 
         downloader = face.download.Downloader(
             url="whatever", path="whatever", url_opener=self.mock_url_opener)
@@ -53,16 +55,18 @@ class TestDownloader:
         assert 2 == self.mock_url_opener.call_count
         assert 1 == self.mock_url_request.call_count
         assert 1 == self.mock_file_opener.call_count
+
+        self.mock_file_context.write.assert_called_once_with(packet)
 
         assert 10 == downloader.downloaded_bytes_count
 
     def test_downloader_simple_download_over_three_calls(self):
 
-        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
         # Data return by context
         packet = 10 * [1]
-        self.context.read.side_effect = [packet, packet, packet, []]
+        self.mock_url_context.read.side_effect = [packet, packet, packet, []]
 
         downloader = face.download.Downloader(
             url="whatever", path="whatever", url_opener=self.mock_url_opener)
@@ -75,15 +79,19 @@ class TestDownloader:
         assert 1 == self.mock_url_request.call_count
         assert 1 == self.mock_file_opener.call_count
 
+        calls = itertools.repeat(mock.call(packet), 3)
+        self.mock_file_context.write.assert_has_calls(calls)
+        assert 3 == self.mock_file_context.write.call_count
+
         assert 30 == downloader.downloaded_bytes_count
 
     def test_downloader_with_timeout_error(self):
 
-        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
         # Data return by context
         packet = 10 * [1]
-        self.context.read.side_effect = [packet, TimeoutError(), packet, packet, []]
+        self.mock_url_context.read.side_effect = [packet, TimeoutError(), packet, packet, []]
 
         downloader = face.download.Downloader(
             url="whatever", path="whatever", url_opener=self.mock_url_opener)
@@ -96,15 +104,19 @@ class TestDownloader:
         assert 2 == self.mock_url_request.call_count
         assert 2 == self.mock_file_opener.call_count
 
+        calls = itertools.repeat(mock.call(packet), 3)
+        self.mock_file_context.write.assert_has_calls(calls)
+        assert 3 == self.mock_file_context.write.call_count
+
         assert 30 == downloader.downloaded_bytes_count
 
     def test_downloader_with_timeout_error_over_max_tries(self):
 
-        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
         # Data return by context
         packet = 10 * [1]
-        self.context.read.side_effect = [
+        self.mock_url_context.read.side_effect = [
             packet, TimeoutError(), TimeoutError(), packet, TimeoutError(), TimeoutError(), packet, []]
 
         downloader = face.download.Downloader(max_retries=3, url="whatever", path="whatever",
@@ -118,5 +130,9 @@ class TestDownloader:
         assert 5 == self.mock_url_opener.call_count
         assert 4 == self.mock_url_request.call_count
         assert 4 == self.mock_file_opener.call_count
+
+        calls = itertools.repeat(mock.call(packet), 2)
+        self.mock_file_context.write.assert_has_calls(calls)
+        assert 2 == self.mock_file_context.write.call_count
 
         assert 20 == downloader.downloaded_bytes_count
