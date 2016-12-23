@@ -27,7 +27,8 @@ class Downloader:
     A simple class supports downloading large files with retries.
     """
 
-    def __init__(self, url, path, max_retries=5, url_opener=urllib.request.urlopen):
+    def __init__(self, url, path, max_retries=5,
+                 url_opener=urllib.request.urlopen, url_request=urllib.request.Request, file_opener=open):
         """
         Constructor
         :param url: url to download from
@@ -46,24 +47,26 @@ class Downloader:
 
         self.bytes_per_read = 8192
 
-    def download(self, url_request=urllib.request.Request, url_opener=urllib.request.urlopen, file_opener=open,
-                 verbose=True):
+        self.url_opener = url_opener
+        self.url_request = url_request
+        self.file_opener = file_opener
+
+    def download(self, verbose=True):
 
         if verbose:
             print("Downloading {}".format(self.url))
 
-        header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
-        request = url_request(url=self.url, headers=header)
-
-        flags = "wb" if self.downloaded_bytes_count is 0 else "ab"
-
         try:
 
-            with url_opener(request) as url_connection, file_opener(self.path, mode=flags) as file, \
+            header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
+            request = self.url_request(url=self.url, headers=header)
+
+            flags = "wb" if self.downloaded_bytes_count is 0 else "ab"
+
+            with self.url_opener(request) as url_connection, self.file_opener(self.path, mode=flags) as file, \
                     tqdm.tqdm(total=self.total_bytes_count, disable=not verbose) as progress_bar:
 
                 progress_bar.update(self.downloaded_bytes_count)
-
                 data = url_connection.read(self.bytes_per_read)
 
                 # Read while data is available
@@ -73,7 +76,6 @@ class Downloader:
                     self.downloaded_bytes_count += len(data)
 
                     progress_bar.update(len(data))
-
                     data = url_connection.read(self.bytes_per_read)
 
                 # Sometimes server sends empty packet even though not all data has been downloaded yet
@@ -87,9 +89,15 @@ class Downloader:
 
             if self.reties_count < self.max_retries:
 
+                if verbose:
+                    print("Download failed, retrying...")
+
                 self.reties_count += 1
-                self.download(url_request, url_opener, file_opener, verbose)
+                self.download(verbose)
 
             else:
+
+                if verbose:
+                    print("Download failed despite retrying {} times, raising error".format(self.reties_count))
 
                 raise error
