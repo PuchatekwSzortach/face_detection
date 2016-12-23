@@ -8,13 +8,15 @@ import urllib.error
 import tqdm
 
 
-def get_url_asset_size(url, url_opener=urllib.request.urlopen):
+def get_url_asset_size(url, **kwargs):
     """
     Get size of asset under a url
     :param url: url to look for
     :param urlopen: function used to open url, defaults to urllib.request.urlopen
     :return: asset size in bytes
     """
+
+    url_opener = kwargs["url_opener"] if "url_opener" in kwargs else urllib.request.urlopen
 
     with url_opener(url) as url_connection:
 
@@ -47,7 +49,7 @@ class Downloader:
         self.reties_count = 0
         self.downloaded_bytes_count = 0
 
-        self.total_bytes_count = get_url_asset_size(self.url, url_opener=self.url_opener)
+        self.total_bytes_count = get_url_asset_size(self.url, **kwargs)
 
         self.bytes_per_read = 8192
 

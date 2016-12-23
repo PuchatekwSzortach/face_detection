@@ -18,7 +18,8 @@ def test_get_url_asset_size():
     context = mock_url_opener.return_value.__enter__.return_value
     context.info = mock.Mock(return_value={"Content-Length": "10"})
 
-    size = face.download.get_url_asset_size(url="url", url_opener=mock_url_opener)
+    kwargs = {"url_opener": mock_url_opener}
+    size = face.download.get_url_asset_size(url="url", **kwargs)
     assert 10 == size
 
 

@@ -4,6 +4,7 @@ Code for working with Celeb+ dataset
 
 import os
 import shutil
+import subprocess
 
 import face.download
 
@@ -31,7 +32,11 @@ def get_celeb_datasets():
         "https://www.dropbox.com/sh/8oqt9vytwxb3s4r/AADuEM2h2qG_L0UbUTViRH5Da/Img/img_celeba.7z/img_celeba.7z.014?dl=1"
     ]
 
-    # data_directory = "../../data/faces/"
+    data_directory = "../../data/faces/"
+
+    filenames = [os.path.basename(url).split("?")[0] for url in image_archives_urls]
+    paths = [os.path.join(data_directory, filename) for filename in filenames]
+
     # shutil.rmtree(data_directory, ignore_errors=True)
     # os.makedirs(data_directory, exist_ok=True)
     #
@@ -39,6 +44,8 @@ def get_celeb_datasets():
     #
     #     filename = os.path.basename(url).split("?")[0]
     #     face.download.Downloader(url, os.path.join(data_directory, filename)).download()
+
+    subprocess.call(["7z", "x", paths[0], "-o" + data_directory])
 
 
 
