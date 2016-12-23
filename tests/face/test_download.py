@@ -37,7 +37,7 @@ class TestDownloader:
 
         self.mock_url_request = mock.Mock()
 
-    def test_downloader_simple_one_read_download(self):
+    def test_simple_one_read_download(self):
 
         self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "10"})
 
@@ -60,7 +60,7 @@ class TestDownloader:
 
         assert 10 == downloader.downloaded_bytes_count
 
-    def test_downloader_simple_download_over_three_calls(self):
+    def test_simple_download_over_three_calls(self):
 
         self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
@@ -85,7 +85,7 @@ class TestDownloader:
 
         assert 30 == downloader.downloaded_bytes_count
 
-    def test_downloader_with_timeout_error(self):
+    def test_timeout_error(self):
 
         self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
@@ -110,7 +110,7 @@ class TestDownloader:
 
         assert 30 == downloader.downloaded_bytes_count
 
-    def test_downloader_with_timeout_error_over_max_tries(self):
+    def test_timeout_error_over_max_retries(self):
 
         self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "30"})
 
@@ -136,3 +136,87 @@ class TestDownloader:
         assert 2 == self.mock_file_context.write.call_count
 
         assert 20 == downloader.downloaded_bytes_count
+
+    def test_zero_bytes_returned_before_download_finishes(self):
+
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "40"})
+
+        # Data return by context
+        packet = 10 * [1]
+        self.mock_url_context.read.side_effect = [
+            packet, packet, [], packet, packet, []]
+
+        downloader = face.download.Downloader(
+            max_retries=3, url="whatever", path="whatever", url_opener=self.mock_url_opener)
+
+        downloader.download(
+            url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+            file_opener=self.mock_file_opener, verbose=False)
+
+        assert 3 == self.mock_url_opener.call_count
+        assert 2 == self.mock_url_request.call_count
+        assert 2 == self.mock_file_opener.call_count
+
+        calls = itertools.repeat(mock.call(packet), 4)
+        self.mock_file_context.write.assert_has_calls(calls)
+        assert 4 == self.mock_file_context.write.call_count
+
+        assert 40 == downloader.downloaded_bytes_count
+
+        assert 1 == downloader.reties_count
+
+    def test_download_resumed_after_content_too_short_error(self):
+
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "40"})
+
+        # Data return by context
+        packet = 10 * [1]
+        connection_error = urllib.error.ContentTooShortError(message="Testing connection exception", content=[])
+        self.mock_url_context.read.side_effect = [
+            packet, packet, connection_error, packet, packet, []]
+
+        downloader = face.download.Downloader(
+            max_retries=3, url="whatever", path="whatever", url_opener=self.mock_url_opener)
+
+        downloader.download(
+            url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+            file_opener=self.mock_file_opener, verbose=False)
+
+        assert 3 == self.mock_url_opener.call_count
+        assert 2 == self.mock_url_request.call_count
+        assert 2 == self.mock_file_opener.call_count
+
+        calls = itertools.repeat(mock.call(packet), 4)
+        self.mock_file_context.write.assert_has_calls(calls)
+        assert 4 == self.mock_file_context.write.call_count
+
+        assert 40 == downloader.downloaded_bytes_count
+        assert 1 == downloader.reties_count
+
+    def test_content_too_short_error_over_max_retries(self):
+
+        self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "40"})
+
+        # Data return by context
+        packet = 10 * [1]
+        connection_error = urllib.error.ContentTooShortError(message="Testing connection exception", content=[])
+        self.mock_url_context.read.side_effect = [
+            connection_error, packet, connection_error, connection_error, packet, []]
+
+        downloader = face.download.Downloader(
+            max_retries=2, url="whatever", path="whatever", url_opener=self.mock_url_opener)
+
+        with pytest.raises(urllib.error.ContentTooShortError):
+            downloader.download(
+                url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+                file_opener=self.mock_file_opener, verbose=False)
+
+        assert 4 == self.mock_url_opener.call_count
+        assert 3 == self.mock_url_request.call_count
+        assert 3 == self.mock_file_opener.call_count
+
+        self.mock_file_context.write.assert_called_once_with(packet)
+        assert 1 == self.mock_file_context.write.call_count
+
+        assert 10 == downloader.downloaded_bytes_count
+        assert 2 == downloader.reties_count

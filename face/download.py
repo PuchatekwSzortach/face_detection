@@ -66,6 +66,7 @@ class Downloader:
 
                 data = url_connection.read(self.bytes_per_read)
 
+                # Read while data is available
                 while len(data) != 0:
 
                     file.write(data)
@@ -75,7 +76,14 @@ class Downloader:
 
                     data = url_connection.read(self.bytes_per_read)
 
-        except TimeoutError as error:
+                # Sometimes server sends empty packet even though not all data has been downloaded yet
+                if self.downloaded_bytes_count != self.total_bytes_count:
+
+                    raise urllib.error.ContentTooShortError(
+                        message="Empty packet received before end of download",
+                        content=data)
+
+        except (TimeoutError, urllib.error.ContentTooShortError) as error:
 
             if self.reties_count < self.max_retries:
 
