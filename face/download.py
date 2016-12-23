@@ -64,9 +64,6 @@ class Downloader:
 
                 data = url_connection.read(self.bytes_per_read)
 
-                print()
-                print("Data is: {} and has length {}".format(data, len(data)))
-
                 while len(data) != 0:
 
                     file.write(data)

@@ -21,104 +21,102 @@ def test_get_url_asset_size():
     assert 10 == size
 
 
-def test_downloader_simple_one_read_download():
+class TestDownloader:
+    """
+    Test class for face.download.Downloader
+    """
 
-    mock_url_opener = mock.mock_open()
-    mock_file_opener = mock.mock_open()
+    def setup_method(self, method):
 
-    # Mock url opener context
-    context = mock_url_opener.return_value.__enter__.return_value
-    context.info = mock.Mock(return_value={"Content-Length": "10"})
+        self.mock_url_opener = mock.mock_open()
+        self.mock_file_opener = mock.mock_open()
 
-    # Data return by context
-    packet = 10 * [1]
-    context.read.side_effect = [packet, []]
-    mock_url_request = mock.Mock()
+        self.context = self.mock_url_opener.return_value.__enter__.return_value
 
-    downloader = face.download.Downloader(url="whatever", path="whatever", url_opener=mock_url_opener)
-    downloader.download(url_request=mock_url_request, url_opener=mock_url_opener, file_opener=mock_file_opener)
+        self.mock_url_request = mock.Mock()
 
-    assert 2 == mock_url_opener.call_count
-    assert 1 == mock_url_request.call_count
-    assert 1 == mock_file_opener.call_count
+    def test_downloader_simple_one_read_download(self):
 
-    assert 10 == downloader.downloaded_bytes_count
+        self.context.info = mock.Mock(return_value={"Content-Length": "10"})
 
+        # Data return by context
+        packet = 10 * [1]
+        self.context.read.side_effect = [packet, []]
 
-def test_downloader_simple_download_over_three_calls():
+        downloader = face.download.Downloader(
+            url="whatever", path="whatever", url_opener=self.mock_url_opener)
 
-    mock_url_opener = mock.mock_open()
-    mock_file_opener = mock.mock_open()
+        downloader.download(
+            url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+            file_opener=self.mock_file_opener)
 
-    # Mock url opener context
-    context = mock_url_opener.return_value.__enter__.return_value
-    context.info = mock.Mock(return_value={"Content-Length": "30"})
+        assert 2 == self.mock_url_opener.call_count
+        assert 1 == self.mock_url_request.call_count
+        assert 1 == self.mock_file_opener.call_count
 
-    # Data return by context
-    packet = 10 * [1]
-    context.read.side_effect = [packet, packet, packet, []]
+        assert 10 == downloader.downloaded_bytes_count
 
-    mock_url_request = mock.Mock()
+    def test_downloader_simple_download_over_three_calls(self):
 
-    downloader = face.download.Downloader(url="whatever", path="whatever", url_opener=mock_url_opener)
-    downloader.download(url_request=mock_url_request, url_opener=mock_url_opener, file_opener=mock_file_opener)
+        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
 
-    assert 2 == mock_url_opener.call_count
-    assert 1 == mock_url_request.call_count
-    assert 1 == mock_file_opener.call_count
+        # Data return by context
+        packet = 10 * [1]
+        self.context.read.side_effect = [packet, packet, packet, []]
 
-    assert 30 == downloader.downloaded_bytes_count
+        downloader = face.download.Downloader(
+            url="whatever", path="whatever", url_opener=self.mock_url_opener)
 
+        downloader.download(
+            url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+            file_opener=self.mock_file_opener)
 
-def test_downloader_with_timeout_error():
+        assert 2 == self.mock_url_opener.call_count
+        assert 1 == self.mock_url_request.call_count
+        assert 1 == self.mock_file_opener.call_count
 
-    mock_url_opener = mock.mock_open()
-    mock_file_opener = mock.mock_open()
+        assert 30 == downloader.downloaded_bytes_count
 
-    # Mock url opener context
-    context = mock_url_opener.return_value.__enter__.return_value
-    context.info = mock.Mock(return_value={"Content-Length": "30"})
+    def test_downloader_with_timeout_error(self):
 
-    # Data return by context
-    packet = 10 * [1]
-    context.read.side_effect = [packet, TimeoutError(), packet, packet, []]
+        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
 
-    mock_url_request = mock.Mock()
+        # Data return by context
+        packet = 10 * [1]
+        self.context.read.side_effect = [packet, TimeoutError(), packet, packet, []]
 
-    downloader = face.download.Downloader(url="whatever", path="whatever", url_opener=mock_url_opener)
-    downloader.download(url_request=mock_url_request, url_opener=mock_url_opener, file_opener=mock_file_opener)
+        downloader = face.download.Downloader(
+            url="whatever", path="whatever", url_opener=self.mock_url_opener)
 
-    assert 3 == mock_url_opener.call_count
-    assert 2 == mock_url_request.call_count
-    assert 2 == mock_file_opener.call_count
+        downloader.download(
+            url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+            file_opener=self.mock_file_opener)
 
-    assert 30 == downloader.downloaded_bytes_count
+        assert 3 == self.mock_url_opener.call_count
+        assert 2 == self.mock_url_request.call_count
+        assert 2 == self.mock_file_opener.call_count
 
+        assert 30 == downloader.downloaded_bytes_count
 
-def test_downloader_with_timeout_error_over_max_tries():
-    
-    mock_url_opener = mock.mock_open()
-    mock_file_opener = mock.mock_open()
+    def test_downloader_with_timeout_error_over_max_tries(self):
 
-    # Mock url opener context
-    context = mock_url_opener.return_value.__enter__.return_value
-    context.info = mock.Mock(return_value={"Content-Length": "30"})
+        self.context.info = mock.Mock(return_value={"Content-Length": "30"})
 
-    # Data return by context
-    packet = 10 * [1]
-    context.read.side_effect = [
-        packet, TimeoutError(), TimeoutError(), packet, TimeoutError(), TimeoutError(), packet, []]
+        # Data return by context
+        packet = 10 * [1]
+        self.context.read.side_effect = [
+            packet, TimeoutError(), TimeoutError(), packet, TimeoutError(), TimeoutError(), packet, []]
 
-    mock_url_request = mock.Mock()
+        downloader = face.download.Downloader(max_retries=3, url="whatever", path="whatever",
+                                              url_opener=self.mock_url_opener)
 
-    downloader = face.download.Downloader(max_retries=3, url="whatever", path="whatever", url_opener=mock_url_opener)
+        with pytest.raises(TimeoutError):
+            downloader.download(
+                url_request=self.mock_url_request, url_opener=self.mock_url_opener,
+                file_opener=self.mock_file_opener)
 
-    with pytest.raises(TimeoutError):
+        assert 5 == self.mock_url_opener.call_count
+        assert 4 == self.mock_url_request.call_count
+        assert 4 == self.mock_file_opener.call_count
 
-        downloader.download(url_request=mock_url_request, url_opener=mock_url_opener, file_opener=mock_file_opener)
-
-    assert 5 == mock_url_opener.call_count
-    assert 4 == mock_url_request.call_count
-    assert 4 == mock_file_opener.call_count
-
-    assert 20 == downloader.downloaded_bytes_count
+        assert 20 == downloader.downloaded_bytes_count
