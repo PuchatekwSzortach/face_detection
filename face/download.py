@@ -46,9 +46,11 @@ class Downloader:
 
         self.bytes_per_read = 8192
 
-    def download(self, url_request=urllib.request.Request, url_opener=urllib.request.urlopen, file_opener=open):
+    def download(self, url_request=urllib.request.Request, url_opener=urllib.request.urlopen, file_opener=open,
+                 verbose=True):
 
-        print("Downloading {}".format(self.url))
+        if verbose:
+            print("Downloading {}".format(self.url))
 
         header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
         request = url_request(url=self.url, headers=header)
@@ -58,7 +60,7 @@ class Downloader:
         try:
 
             with url_opener(request) as url_connection, file_opener(self.path, mode=flags) as file, \
-                    tqdm.tqdm(total=self.total_bytes_count) as progress_bar:
+                    tqdm.tqdm(total=self.total_bytes_count, disable=not verbose) as progress_bar:
 
                 progress_bar.update(self.downloaded_bytes_count)
 
@@ -68,6 +70,7 @@ class Downloader:
 
                     file.write(data)
                     self.downloaded_bytes_count += len(data)
+
                     progress_bar.update(len(data))
 
                     data = url_connection.read(self.bytes_per_read)
@@ -77,7 +80,7 @@ class Downloader:
             if self.reties_count < self.max_retries:
 
                 self.reties_count += 1
-                self.download(url_request, url_opener, file_opener)
+                self.download(url_request, url_opener, file_opener, verbose)
 
             else:
 
