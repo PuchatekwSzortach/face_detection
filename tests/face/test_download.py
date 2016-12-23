@@ -37,6 +37,12 @@ class TestDownloader:
 
         self.mock_url_request = mock.Mock()
 
+        self.kwargs = {
+            "url_opener": self.mock_url_opener,
+            "url_request": self.mock_url_request,
+            "file_opener": self.mock_file_opener
+        }
+
     def test_simple_one_read_download(self):
 
         self.mock_url_context.info = mock.Mock(return_value={"Content-Length": "10"})
@@ -46,9 +52,7 @@ class TestDownloader:
         self.mock_url_context.read.side_effect = [packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever",
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", **self.kwargs)
 
         downloader.download(verbose=False)
 
@@ -69,9 +73,7 @@ class TestDownloader:
         self.mock_url_context.read.side_effect = [packet, packet, packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever",
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", **self.kwargs)
 
         downloader.download(verbose=False)
 
@@ -94,9 +96,7 @@ class TestDownloader:
         self.mock_url_context.read.side_effect = [packet, TimeoutError(), packet, packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever",
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", **self.kwargs)
 
         downloader.download(verbose=False)
 
@@ -120,9 +120,7 @@ class TestDownloader:
             packet, TimeoutError(), TimeoutError(), packet, TimeoutError(), TimeoutError(), packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever", max_retries=3,
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", max_retries=3, **self.kwargs)
 
         with pytest.raises(TimeoutError):
             downloader.download(verbose=False)
@@ -147,9 +145,7 @@ class TestDownloader:
             packet, packet, [], packet, packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever", max_retries=3,
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", **self.kwargs)
 
         downloader.download(verbose=False)
 
@@ -176,9 +172,7 @@ class TestDownloader:
             packet, packet, connection_error, packet, packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever", max_retries=3,
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", **self.kwargs)
 
         downloader.download(verbose=False)
 
@@ -204,9 +198,7 @@ class TestDownloader:
             connection_error, packet, connection_error, connection_error, packet, []]
 
         downloader = face.download.Downloader(
-            url="whatever", path="whatever", max_retries=2,
-            url_opener=self.mock_url_opener, url_request=self.mock_url_request,
-            file_opener=self.mock_file_opener)
+            url="whatever", path="whatever", max_retries=2, **self.kwargs)
 
         with pytest.raises(urllib.error.ContentTooShortError):
             downloader.download(verbose=False)

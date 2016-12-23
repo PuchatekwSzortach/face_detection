@@ -27,8 +27,7 @@ class Downloader:
     A simple class supports downloading large files with retries.
     """
 
-    def __init__(self, url, path, max_retries=5,
-                 url_opener=urllib.request.urlopen, url_request=urllib.request.Request, file_opener=open):
+    def __init__(self, url, path, max_retries=5, **kwargs):
         """
         Constructor
         :param url: url to download from
@@ -40,16 +39,17 @@ class Downloader:
         self.path = path
 
         self.max_retries = max_retries
-        self.reties_count = 0
 
+        self.url_opener = kwargs["url_opener"] if "url_opener" in kwargs else urllib.request.urlopen
+        self.url_request = kwargs["url_request"] if "url_request" in kwargs else urllib.request.Request
+        self.file_opener = kwargs["file_opener"] if "file_opener" in kwargs else open
+
+        self.reties_count = 0
         self.downloaded_bytes_count = 0
-        self.total_bytes_count = get_url_asset_size(self.url, url_opener=url_opener)
+
+        self.total_bytes_count = get_url_asset_size(self.url, url_opener=self.url_opener)
 
         self.bytes_per_read = 8192
-
-        self.url_opener = url_opener
-        self.url_request = url_request
-        self.file_opener = file_opener
 
     def download(self, verbose=True):
         """
