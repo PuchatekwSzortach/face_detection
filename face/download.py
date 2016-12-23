@@ -52,15 +52,17 @@ class Downloader:
         self.file_opener = file_opener
 
     def download(self, verbose=True):
+        """
+        Start download
+        :param verbose: whether to output progress messages
+        """
 
         if verbose:
             print("Downloading {}".format(self.url))
 
         try:
 
-            header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
-            request = self.url_request(url=self.url, headers=header)
-
+            request = self._get_request()
             flags = "wb" if self.downloaded_bytes_count is 0 else "ab"
 
             with self.url_opener(request) as url_connection, self.file_opener(self.path, mode=flags) as file, \
@@ -87,17 +89,26 @@ class Downloader:
 
         except (TimeoutError, urllib.error.ContentTooShortError) as error:
 
-            if self.reties_count < self.max_retries:
+            self._handle_error(error, verbose)
 
-                if verbose:
-                    print("Download failed, retrying...")
+    def _get_request(self):
 
-                self.reties_count += 1
-                self.download(verbose)
+        header = {'Range': 'bytes={}-{}'.format(self.downloaded_bytes_count, self.total_bytes_count)}
+        return self.url_request(url=self.url, headers=header)
 
-            else:
+    def _handle_error(self, error, verbose):
 
-                if verbose:
-                    print("Download failed despite retrying {} times, raising error".format(self.reties_count))
+        if self.reties_count < self.max_retries:
 
-                raise error
+            if verbose:
+                print("Download failed, retrying...")
+
+            self.reties_count += 1
+            self.download(verbose)
+
+        else:
+
+            if verbose:
+                print("Download failed despite retrying {} times, raising error".format(self.reties_count))
+
+            raise error
