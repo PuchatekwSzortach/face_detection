@@ -2,6 +2,11 @@
 Module with various utilities, mostly files related
 """
 
+import logging
+import os
+
+import cv2
+
 
 def get_file_lines(path):
     """
@@ -22,3 +27,33 @@ def get_file_line_count(path):
     """
 
     return len(get_file_lines(path))
+
+
+def get_logger():
+    """
+    Returns a logger that writes to an html file in /tmp directory
+    :return: logger instance
+    """
+
+    directory = "/tmp/faces"
+    path = os.path.join(directory, "log.html")
+
+    os.makedirs(directory, exist_ok=True)
+
+    logger = logging.getLogger("faces")
+    file_handler = logging.FileHandler(path, mode="w")
+
+    logger.setLevel(logging.INFO)
+    logger.addHandler(file_handler)
+
+    return logger
+
+
+def get_image(path):
+    """
+    Get image at a given path, applying any necessary scaling.
+    :param path:
+    :return: numpy array
+    """
+
+    return cv2.imread(path) / 255

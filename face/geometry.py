@@ -18,3 +18,5 @@ def get_bounding_box(left, top, width, height):
     return shapely.geometry.Polygon(
         [(left, top), (left + width, top), (left + width, top + height), (left, top + height)])
 
+
+
