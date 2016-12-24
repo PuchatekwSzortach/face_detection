@@ -7,7 +7,7 @@ import face.datasets.celeb
 
 def main():
 
-    face.datasets.celeb.get_celeb_datasets()
+    face.datasets.celeb.DatasetBuilder("../../data/faces/").build_datasets()
 
 
 if __name__ == "__main__":
