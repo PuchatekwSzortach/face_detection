@@ -15,9 +15,9 @@ def main():
 
     logger = face.utilities.get_logger()
 
-    # dataset = "large_dataset"
+    dataset = "large_dataset"
     # dataset = "medium_dataset"
-    dataset = "small_dataset"
+    # dataset = "small_dataset"
 
     image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
     bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
@@ -25,13 +25,15 @@ def main():
 
     generator = face.data_generators.get_batches_generator(image_paths_file, bounding_boxes_file, batch_size)
 
-    for _ in range(2):
+    images_count = face.utilities.get_file_lines_count(image_paths_file)
+
+    for _ in range(images_count):
 
         batch = next(generator)
 
-        batch = [image * 255 for image in batch]
-        batch = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in batch]
-        logger.info(vlogging.VisualRecord("Images batch", batch))
+        # batch = [image * 255 for image in batch]
+        # batch = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in batch]
+        # logger.info(vlogging.VisualRecord("Images batch", batch))
 
 
 if __name__ == "__main__":

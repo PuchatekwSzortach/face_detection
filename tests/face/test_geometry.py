@@ -42,10 +42,19 @@ def test_get_bounding_boxes_map():
     assert expected == actual
 
 
-def test_get_intersection_over_union():
+def test_get_intersection_over_union_simple_intersection():
 
     first_polygon = shapely.geometry.Polygon([(10, 10), (20, 10), (20, 20), (10, 20)])
     second_polygon = shapely.geometry.Polygon([(10, 10), (15, 10), (15, 15), (10, 15)])
 
     assert 0.25 == face.geometry.get_intersection_over_union(first_polygon, second_polygon)
     assert 0.25 == face.geometry.get_intersection_over_union(second_polygon, first_polygon)
+
+
+def test_get_intersection_over_union_non_intersecting_polygons():
+
+    first_polygon = shapely.geometry.Polygon([(10, 10), (20, 10), (20, 20), (10, 20)])
+    second_polygon = shapely.geometry.Polygon([(100, 100), (150, 100), (150, 150), (100, 150)])
+
+    assert 0 == face.geometry.get_intersection_over_union(first_polygon, second_polygon)
+    assert 0 == face.geometry.get_intersection_over_union(second_polygon, first_polygon)

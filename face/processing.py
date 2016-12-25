@@ -2,9 +2,13 @@
 Module with various image related processing functions
 """
 
+import os
+
 import cv2
+import shapely.geometry
 
 import face.utilities
+import face.geometry
 
 
 class InvalidBoundingBoxError(Exception):
@@ -38,8 +42,29 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
 
     while len(images_batch) < batch_size:
 
-        image = face.utilities.get_image(paths[index])
-        images_batch.append(image)
+        try:
+
+            path = paths[index]
+            image = face.utilities.get_image(path)
+
+            image_bounding_box = shapely.geometry.Polygon(
+                [(0, 0), (image.shape[1], 0), (image.shape[1], image.shape[0]), (0, image.shape[0])])
+
+            face_bounding_box = bounding_boxes_map[os.path.basename(path)]
+
+            # Only allow images for which face covers at least 1% of the image. If it doesn't, then face bounding
+            # box is probably incorrect
+            if face.geometry.get_intersection_over_union(image_bounding_box, face_bounding_box) < 0.01:
+
+                raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
+
+            images_batch.append(image)
+
+        # If image had an invalid bounding box, we want to skip over that image and go to next one
+        except InvalidBoundingBoxError:
+
+            print(paths[index])
+            pass
 
         index += 1
 
