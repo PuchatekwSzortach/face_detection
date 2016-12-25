@@ -2,6 +2,8 @@
 Module for visualizing outputs of data generators
 """
 
+import os
+
 import vlogging
 
 import face.utilities
@@ -13,13 +15,17 @@ def main():
 
     logger = face.utilities.get_logger()
 
-    image_paths_file = "../../data/faces/small_dataset/training_image_paths.txt"
-    bounding_boxes_file = "../../data/faces/small_dataset/training_bounding_boxes_list.txt"
+    # dataset = "large_dataset"
+    # dataset = "medium_dataset"
+    dataset = "small_dataset"
+
+    image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
+    bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
     batch_size = 8
 
     generator = face.data_generators.get_batches_generator(image_paths_file, bounding_boxes_file, batch_size)
 
-    for _ in range(4):
+    for _ in range(2):
 
         batch = next(generator)
 

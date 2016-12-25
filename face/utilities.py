@@ -19,7 +19,7 @@ def get_file_lines(path):
         return file.readlines()
 
 
-def get_file_line_count(path):
+def get_file_lines_count(path):
     """
     Give a path to a file, return number of lines file has
     :param path: path to file
