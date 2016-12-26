@@ -29,11 +29,11 @@ def main():
 
     for _ in range(4):
 
-        batch = next(generator)
+        images, labels = next(generator)
 
-        batch = [image * 255 for image in batch]
-        batch = [face.processing.scale_image_keeping_aspect_ratio(image, 100) for image in batch]
-        logger.info(vlogging.VisualRecord("Images batch", batch))
+        images = [image * 255 for image in images]
+        images = [face.processing.scale_image_keeping_aspect_ratio(image, 100) for image in images]
+        logger.info(vlogging.VisualRecord("Images batch", images, str(labels)))
 
 
 if __name__ == "__main__":
