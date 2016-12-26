@@ -57,6 +57,8 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
                 raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
 
             target_size = 227
+            scale = face.geometry.get_scale(face_bounding_box, target_size)
+
 
 
             images_batch.append(image)
@@ -73,3 +75,15 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
             index = 0
 
     return images_batch
+
+
+def get_scaled_image(image, scale):
+    """
+    Scales image. A thin wrapper around cv2.resize that makes sure that resulting image
+    maps to integer sizes
+    :param image: image
+    :param scale: float
+    :return: scaled image
+    """
+
+    return cv2.resize(image, (int(scale * image.shape[1]), int(scale * image.shape[0])))
