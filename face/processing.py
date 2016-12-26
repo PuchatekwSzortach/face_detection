@@ -60,10 +60,18 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
             scale = face.geometry.get_scale(face_bounding_box, target_size)
 
             scaled_image = get_scaled_image(image, scale)
+            scaled_bounding_box = face.geometry.get_scaled_bounding_box(face_bounding_box, scale)
 
+            bounds = [int(bound) for bound in scaled_bounding_box.bounds]
 
+            cv2.rectangle(
+                scaled_image,
+                (bounds[0], bounds[1]),
+                (bounds[2], bounds[3]),
+                (0, 1, 0), thickness=6
+            )
 
-            images_batch.append(image)
+            images_batch.append(scaled_image)
 
         # If image had an invalid bounding box, we want to skip over that image and go to next one
         except InvalidBoundingBoxError:
