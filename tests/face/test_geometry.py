@@ -100,3 +100,36 @@ def test_get_scaled_bounding_box_tall_box():
     actual = face.geometry.get_scaled_bounding_box(box, scale)
 
     assert expected.equals(actual)
+
+
+def test_flip_bounding_box_about_vertical_axis_box_to_left_of_axis():
+
+    box = shapely.geometry.box(10, 20, 60, 40)
+    image_shape = [200, 100]
+
+    expected = shapely.geometry.box(40, 20, 90, 40)
+    actual = face.geometry.flip_bounding_box_about_vertical_axis(box, image_shape)
+
+    assert expected.equals(actual)
+
+
+def test_flip_bounding_box_about_vertical_axis_box_to_right_of_axis():
+
+    box = shapely.geometry.box(30, 10, 70, 50)
+    image_shape = [200, 80]
+
+    expected = shapely.geometry.box(10, 10, 50, 50)
+    actual = face.geometry.flip_bounding_box_about_vertical_axis(box, image_shape)
+
+    assert expected.equals(actual)
+
+
+def test_flip_bounding_box_box_centered_on_axis():
+
+    box = shapely.geometry.box(30, 10, 90, 90)
+    image_shape = [200, 120]
+
+    expected = box
+    actual = face.geometry.flip_bounding_box_about_vertical_axis(box, image_shape)
+
+    assert expected.equals(actual)

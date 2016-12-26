@@ -90,3 +90,15 @@ def get_scaled_bounding_box(bounding_box, scale):
     return shapely.affinity.affine_transform(bounding_box, [scale, 0, 0, scale, 0, 0])
 
 
+def flip_bounding_box_about_vertical_axis(bounding_box, image_shape):
+    """
+    Given a bounding box and image shape, flip the box about vertical axis of the image
+    :param bounding_box: bounding box
+    :param image_shape: image shape
+    :return: flipped bounding box
+    """
+
+    bounds = bounding_box.bounds
+    return shapely.geometry.box(image_shape[1] - bounds[0], bounds[1], image_shape[1] - bounds[2], bounds[3])
+
+
