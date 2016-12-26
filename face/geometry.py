@@ -60,3 +60,19 @@ def get_intersection_over_union(first_polygon, second_polygon):
 
     return intersection_polygon.area / union_polygon.area
 
+
+def get_scale(bounding_box, target_size):
+    """
+    Get a scale that would bring smaller side of bounding box to have target_size
+    :param bounding_box: bounding box
+    :param target_size: target size for smaller bounding box side
+    :return: float
+    """
+
+    horizontal_side = bounding_box.bounds[2] - bounding_box.bounds[0]
+    vertical_side = bounding_box.bounds[3] - bounding_box.bounds[1]
+
+    smaller_side = horizontal_side if horizontal_side < vertical_side else vertical_side
+
+    return target_size / smaller_side
+

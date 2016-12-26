@@ -56,6 +56,9 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
 
                 raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
 
+            target_size = 227
+
+
             images_batch.append(image)
 
         # If image had an invalid bounding box, we want to skip over that image and go to next one

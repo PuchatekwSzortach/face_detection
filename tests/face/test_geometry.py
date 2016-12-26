@@ -62,3 +62,19 @@ def test_get_intersection_over_union_non_intersecting_polygons():
 
     assert 0 == face.geometry.get_intersection_over_union(first_polygon, second_polygon)
     assert 0 == face.geometry.get_intersection_over_union(second_polygon, first_polygon)
+
+
+def test_get_scale_horizontal_box():
+
+    box = shapely.geometry.box(10, 20, 50, 30)
+    target_size = 5
+
+    assert 0.5 == face.geometry.get_scale(box, target_size)
+
+
+def test_get_scale_vertical_box():
+
+    box = shapely.geometry.box(10, 20, 50, 120)
+    target_size = 10
+
+    assert 0.25 == face.geometry.get_scale(box, target_size)
