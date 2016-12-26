@@ -15,9 +15,9 @@ def main():
 
     logger = face.utilities.get_logger()
 
-    dataset = "large_dataset"
+    # dataset = "large_dataset"
     # dataset = "medium_dataset"
-    # dataset = "small_dataset"
+    dataset = "small_dataset"
 
     image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
     bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
