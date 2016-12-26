@@ -59,6 +59,8 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
             target_size = 227
             scale = face.geometry.get_scale(face_bounding_box, target_size)
 
+            scaled_image = get_scaled_image(image, scale)
+
 
 
             images_batch.append(image)

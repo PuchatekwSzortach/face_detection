@@ -78,3 +78,25 @@ def test_get_scale_vertical_box():
     target_size = 10
 
     assert 0.25 == face.geometry.get_scale(box, target_size)
+
+
+def test_get_scaled_bounding_box_long_box():
+
+    box = shapely.geometry.box(10, 20, 50, 30)
+    scale = 3
+
+    expected = shapely.geometry.box(30, 60, 150, 90)
+    actual = face.geometry.get_scaled_bounding_box(box, scale)
+
+    assert expected.equals(actual)
+
+
+def test_get_scaled_bounding_box_tall_box():
+
+    box = shapely.geometry.box(10, 20, 50, 100)
+    scale = 0.5
+
+    expected = shapely.geometry.box(5, 10, 25, 50)
+    actual = face.geometry.get_scaled_bounding_box(box, scale)
+
+    assert expected.equals(actual)

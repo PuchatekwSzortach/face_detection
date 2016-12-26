@@ -3,6 +3,7 @@ Module with geometry related functions, mostly relating to bounding boxes proces
 """
 
 import shapely.geometry
+import shapely.affinity
 
 
 def get_bounding_box(left, top, width, height):
@@ -75,4 +76,17 @@ def get_scale(bounding_box, target_size):
     smaller_side = horizontal_side if horizontal_side < vertical_side else vertical_side
 
     return target_size / smaller_side
+
+
+def get_scaled_bounding_box(bounding_box, scale):
+    """
+    Given a bounding box and a scale, return scaled bounding box. Note that scaling is done w.r.t. axis origin,
+    hence this operation can change all bounding boxes coordinates
+    :param bounding_box: bounding box
+    :param scale: scale
+    :return: rescaled bounding box
+    """
+
+    return shapely.affinity.affine_transform(bounding_box, [scale, 0, 0, scale, 0, 0])
+
 
