@@ -20,6 +20,14 @@ class InvalidBoundingBoxError(Exception):
     pass
 
 
+class CropException(Exception):
+    """
+    A simple exception used when no good image crop could be obtained
+    """
+
+    pass
+
+
 def scale_image_keeping_aspect_ratio(image, size):
     """
     Scale input image so that its smaller side becomes size large.
@@ -71,19 +79,11 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
                 scaled_bounding_box = face.geometry.flip_bounding_box_about_vertical_axis(
                     scaled_bounding_box, scaled_image.shape)
 
-            bounds = [int(bound) for bound in scaled_bounding_box.bounds]
-
-            cv2.rectangle(
-                scaled_image,
-                (bounds[0], bounds[1]),
-                (bounds[2], bounds[3]),
-                (0, 1, 0), thickness=6
-            )
-
-            images_batch.append(scaled_image)
+            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=227)
+            images_batch.extend(crops)
 
         # If image had an invalid bounding box, we want to skip over that image and go to next one
-        except InvalidBoundingBoxError:
+        except (InvalidBoundingBoxError, CropException):
 
             pass
 
@@ -106,3 +106,53 @@ def get_scaled_image(image, scale):
     """
 
     return cv2.resize(image, (int(scale * image.shape[1]), int(scale * image.shape[0])))
+
+
+def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
+    """
+    Given an image and a bounding box of face in it, return a tuple (crops, labels), where both crops and labels
+    are a list of length 4. Crops contain random image crops of size crop_size x crop_size such that
+    one crop has a high IOU with face in the picture, while remaining crops have low IOU with face.
+    Corresponding labels are 1 for face and 0 for lack of face. Function throws CropException when no good
+    crops could be obtained within a reasonable amount of attempts.
+    :param image: image
+    :param face_bounding_box: bounding box of face in image
+    :param crop_size: desired crop size
+    :return: (crops, labels) tuple
+    """
+
+    crops = [get_random_face_crop(image, face_bounding_box, crop_size)]
+    return crops, [1] * len(crops)
+
+
+def get_random_face_crop(image, face_bounding_box, crop_size):
+    """
+    Given an image and face bounding box, return a random crop that has high IOU with face bounding box and
+    is of size crop_size x crop_size
+    :param image: image
+    :param face_bounding_box: bounding box of face
+    :param crop_size: desired crop size
+    :return: random crop that mostly contains face
+    """
+
+    bounds = face_bounding_box.bounds
+
+    # Try up to x times to get a good crop
+    for _ in range(100):
+
+        x = int(bounds[0]) + random.randint(-crop_size, crop_size)
+        y = int(bounds[1]) + random.randint(-crop_size, crop_size)
+
+        cropped_region = shapely.geometry.box(x, y, x + crop_size, y + crop_size)
+
+        are_coordinates_legal = x >= 0 and y >= 0 and \
+                                x + crop_size < image.shape[1] and y + crop_size < image.shape[0]
+
+        is_iou_high = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) > 0.5
+
+        if are_coordinates_legal and is_iou_high:
+
+            return image[y:y + crop_size, x:x + crop_size]
+
+    # We failed to find a good crop despite trying x times, throw
+    raise CropException()

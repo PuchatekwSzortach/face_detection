@@ -32,7 +32,7 @@ def main():
         batch = next(generator)
 
         batch = [image * 255 for image in batch]
-        batch = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in batch]
+        batch = [face.processing.scale_image_keeping_aspect_ratio(image, 100) for image in batch]
         logger.info(vlogging.VisualRecord("Images batch", batch))
 
 
