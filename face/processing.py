@@ -3,6 +3,7 @@ Module with various image related processing functions
 """
 
 import os
+import random
 
 import cv2
 import shapely.geometry
@@ -63,7 +64,12 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
             scaled_bounding_box = face.geometry.get_scaled_bounding_box(face_bounding_box, scale)
 
             # Randomly flip image
-            scaled_image = cv2.flip(scaled_image, flipCode=1)
+            if random.randint(0, 1) == 1:
+                
+                scaled_image = cv2.flip(scaled_image, flipCode=1)
+
+                scaled_bounding_box = face.geometry.flip_bounding_box_about_vertical_axis(
+                    scaled_bounding_box, scaled_image.shape)
 
             bounds = [int(bound) for bound in scaled_bounding_box.bounds]
 
