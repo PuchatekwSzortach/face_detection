@@ -47,9 +47,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
             path = paths[index]
             image = face.utilities.get_image(path)
 
-            image_bounding_box = shapely.geometry.Polygon(
-                [(0, 0), (image.shape[1], 0), (image.shape[1], image.shape[0]), (0, image.shape[0])])
-
+            image_bounding_box = shapely.geometry.box(0, 0, image.shape[1], image.shape[0])
             face_bounding_box = bounding_boxes_map[os.path.basename(path)]
 
             # Only allow images for which face covers at least 1% of the image. If it doesn't, then face bounding
@@ -63,7 +61,6 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
         # If image had an invalid bounding box, we want to skip over that image and go to next one
         except InvalidBoundingBoxError:
 
-            print(paths[index])
             pass
 
         index += 1

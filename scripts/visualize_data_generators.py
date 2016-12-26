@@ -27,13 +27,13 @@ def main():
 
     images_count = face.utilities.get_file_lines_count(image_paths_file)
 
-    for _ in range(images_count):
+    for _ in range(4):
 
         batch = next(generator)
 
-        # batch = [image * 255 for image in batch]
-        # batch = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in batch]
-        # logger.info(vlogging.VisualRecord("Images batch", batch))
+        batch = [image * 255 for image in batch]
+        batch = [face.processing.scale_image_keeping_aspect_ratio(image, 100) for image in batch]
+        logger.info(vlogging.VisualRecord("Images batch", batch))
 
 
 if __name__ == "__main__":
