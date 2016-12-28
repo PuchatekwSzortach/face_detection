@@ -5,6 +5,7 @@ Module with various image related processing functions
 import os
 import random
 
+import numpy as np
 import cv2
 import shapely.geometry
 
@@ -66,7 +67,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
 
                 raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
 
-            target_size = 227
+            target_size = 224
             scale = face.geometry.get_scale(face_bounding_box, target_size)
 
             scaled_image = get_scaled_image(image, scale)
@@ -80,7 +81,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
                 scaled_bounding_box = face.geometry.flip_bounding_box_about_vertical_axis(
                     scaled_bounding_box, scaled_image.shape)
 
-            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=227)
+            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=224)
 
             images_batch.extend(crops)
             labels_batch.extend(labels)
@@ -101,7 +102,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
     random.shuffle(batch)
     images_batch, labels_batch = zip(*batch)
 
-    return images_batch, labels_batch
+    return np.array(images_batch), np.array(labels_batch)
 
 
 def get_scaled_image(image, scale):
