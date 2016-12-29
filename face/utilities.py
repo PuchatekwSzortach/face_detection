@@ -29,16 +29,14 @@ def get_file_lines_count(path):
     return len(get_file_lines(path))
 
 
-def get_logger():
+def get_logger(path):
     """
-    Returns a logger that writes to an html file in /tmp directory
+    Returns a logger that writes to an html page
+    :param path: path to log.html page
     :return: logger instance
     """
 
-    directory = "/tmp/faces"
-    path = os.path.join(directory, "log.html")
-
-    os.makedirs(directory, exist_ok=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
 
     logger = logging.getLogger("faces")
     file_handler = logging.FileHandler(path, mode="w")

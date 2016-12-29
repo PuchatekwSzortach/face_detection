@@ -12,6 +12,7 @@ import face.utilities
 import face.data_generators
 import face.processing
 import face.models
+import face.config
 
 
 def log_data_batches(data_generator, logger):
@@ -27,9 +28,8 @@ def log_data_batches(data_generator, logger):
 
 def log_crops_predictions(data_generator, logger):
 
-    image_shape = (224, 224, 3)
-    model = face.models.get_pretrained_vgg_model(image_shape=image_shape)
-    model.load_weights("../../data/faces/models/model.h5")
+    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    model.load_weights(face.config.model_path)
 
     for _ in range(4):
 
@@ -44,7 +44,7 @@ def log_crops_predictions(data_generator, logger):
 
 def main():
 
-    logger = face.utilities.get_logger()
+    logger = face.utilities.get_logger(face.config.log_path)
 
     # dataset = "large_dataset"
     # dataset = "medium_dataset"
@@ -52,7 +52,7 @@ def main():
 
     image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
     bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
-    batch_size = 8
+    batch_size = face.config.batch_size
 
     generator = face.data_generators.get_batches_generator(image_paths_file, bounding_boxes_file, batch_size)
 

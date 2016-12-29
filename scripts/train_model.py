@@ -9,6 +9,7 @@ import keras
 import face.utilities
 import face.models
 import face.data_generators
+import face.config
 
 
 def main():
@@ -24,14 +25,13 @@ def main():
 
     validation_image_paths_file = os.path.join("../../data/faces/", dataset, "validation_image_paths.txt")
     validation_bounding_boxes_file = os.path.join("../../data/faces/", dataset, "validation_bounding_boxes_list.txt")
-    batch_size = 8
+    batch_size = face.config.batch_size
 
-    model_path = "../../data/faces/models/model.h5"
+    model_path = face.config.model_path
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True)
 
-    image_shape = (224, 224, 3)
-    model = face.models.get_pretrained_vgg_model(image_shape=image_shape)
+    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
 
     training_data_generator = face.data_generators.get_batches_generator(
         training_image_paths_file, training_bounding_boxes_file, batch_size)
