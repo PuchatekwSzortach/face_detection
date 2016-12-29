@@ -4,6 +4,8 @@ Script for training models
 
 import os
 
+import keras
+
 import face.utilities
 import face.models
 import face.data_generators
@@ -14,8 +16,8 @@ def main():
     logger = face.utilities.get_logger()
 
     # dataset = "large_dataset"
-    # dataset = "medium_dataset"
-    dataset = "small_dataset"
+    dataset = "medium_dataset"
+    # dataset = "small_dataset"
 
     training_image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
     training_bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
@@ -23,6 +25,10 @@ def main():
     validation_image_paths_file = os.path.join("../../data/faces/", dataset, "validation_image_paths.txt")
     validation_bounding_boxes_file = os.path.join("../../data/faces/", dataset, "validation_bounding_boxes_list.txt")
     batch_size = 8
+
+    model_path = "../../data/faces/models/model.h5"
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True)
 
     image_shape = (224, 224, 3)
     model = face.models.get_pretrained_vgg_model(image_shape=image_shape)
@@ -37,7 +43,8 @@ def main():
         training_data_generator, samples_per_epoch=face.utilities.get_file_lines_count(training_image_paths_file),
         nb_epoch=10,
         validation_data=validation_data_generator,
-        nb_val_samples=face.utilities.get_file_lines_count(validation_image_paths_file)
+        nb_val_samples=face.utilities.get_file_lines_count(validation_image_paths_file),
+        callbacks=[model_checkpoint]
     )
 
 

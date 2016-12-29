@@ -2,6 +2,7 @@
 Module with definitions of prediction models
 """
 
+import keras
 import keras.applications
 
 
@@ -19,7 +20,9 @@ def get_pretrained_vgg_model(image_shape):
     x = keras.layers.Flatten()(x)
 
     model = keras.models.Model(input=input_layer, output=x)
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+    adam = keras.optimizers.Adam(lr=0.00001)
+    model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
 
     return model
 
