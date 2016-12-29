@@ -2,6 +2,9 @@
 Config file with common constants
 """
 
+# Path to data directory
+data_directory = "../../data/faces/"
+
 # Log file path
 log_path = "/tmp/faces/log.html"
 

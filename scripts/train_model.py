@@ -20,11 +20,14 @@ def main():
     dataset = "medium_dataset"
     # dataset = "small_dataset"
 
-    training_image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
-    training_bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
+    data_directory = os.path.join(face.config.data_directory, dataset)
 
-    validation_image_paths_file = os.path.join("../../data/faces/", dataset, "validation_image_paths.txt")
-    validation_bounding_boxes_file = os.path.join("../../data/faces/", dataset, "validation_bounding_boxes_list.txt")
+    training_image_paths_file = os.path.join(data_directory, "training_image_paths.txt")
+    training_bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
+
+    validation_image_paths_file = os.path.join(data_directory, "validation_image_paths.txt")
+    validation_bounding_boxes_file = os.path.join(data_directory, "validation_bounding_boxes_list.txt")
+
     batch_size = face.config.batch_size
 
     model_path = face.config.model_path

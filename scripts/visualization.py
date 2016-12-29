@@ -50,8 +50,10 @@ def main():
     # dataset = "medium_dataset"
     dataset = "small_dataset"
 
-    image_paths_file = os.path.join("../../data/faces/", dataset, "training_image_paths.txt")
-    bounding_boxes_file = os.path.join("../../data/faces/", dataset, "training_bounding_boxes_list.txt")
+    data_directory = os.path.join(face.config.data_directory, dataset)
+
+    image_paths_file = os.path.join(data_directory, "training_image_paths.txt")
+    bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
     batch_size = face.config.batch_size
 
     generator = face.data_generators.get_batches_generator(image_paths_file, bounding_boxes_file, batch_size)
