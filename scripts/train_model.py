@@ -12,9 +12,18 @@ import face.data_generators
 import face.config
 
 
-def main():
+def get_callbacks():
 
-    logger = face.utilities.get_logger()
+    model_path = face.config.model_path
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True, verbose=1)
+
+    reduce_learning_rate_callback = keras.callbacks.ReduceLROnPlateau(factor=0.2, patience=3, verbose=1)
+
+    return [model_checkpoint, reduce_learning_rate_callback]
+
+
+def main():
 
     # dataset = "large_dataset"
     dataset = "medium_dataset"
@@ -30,11 +39,9 @@ def main():
 
     batch_size = face.config.batch_size
 
-    model_path = face.config.model_path
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True)
-
-    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    # model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    model = face.models.get_medium_scale_model()
+    model.load_weights(face.config.model_path)
 
     training_data_generator = face.data_generators.get_batches_generator(
         training_image_paths_file, training_bounding_boxes_file, batch_size)
@@ -44,10 +51,10 @@ def main():
 
     model.fit_generator(
         training_data_generator, samples_per_epoch=face.utilities.get_file_lines_count(training_image_paths_file),
-        nb_epoch=10,
+        nb_epoch=20,
         validation_data=validation_data_generator,
         nb_val_samples=face.utilities.get_file_lines_count(validation_image_paths_file),
-        callbacks=[model_checkpoint]
+        callbacks=get_callbacks()
     )
 
 

@@ -11,6 +11,7 @@ import shapely.geometry
 
 import face.utilities
 import face.geometry
+import face.config
 
 
 class InvalidBoundingBoxError(Exception):
@@ -67,8 +68,8 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
 
                 raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
 
-            target_size = 224
-            scale = face.geometry.get_scale(face_bounding_box, target_size)
+            target_crop_size = face.config.crop_size
+            scale = face.geometry.get_scale(face_bounding_box, target_crop_size)
 
             scaled_image = get_scaled_image(image, scale)
             scaled_bounding_box = face.geometry.get_scaled_bounding_box(face_bounding_box, scale)
@@ -81,7 +82,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
                 scaled_bounding_box = face.geometry.flip_bounding_box_about_vertical_axis(
                     scaled_bounding_box, scaled_image.shape)
 
-            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=224)
+            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=target_crop_size)
 
             images_batch.extend(crops)
             labels_batch.extend(labels)
@@ -201,3 +202,17 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()
+
+
+def get_image_crops(image, crop_size, step_size):
+    """
+    Given an input image, crop size and step size, return a list of image crops.
+    Each crop is crop_size x crop_size large. Cropping begins at position (0, 0) and goes along x-axis at step_size.
+    Once no whole crop can be taken, algorithm goes down by step_size and begins row-scanning again, until crops
+    across whole image have been taken.
+    :param image: image
+    :param crop_size: size crops should have
+    :param step_size: step at which crops should be taken
+    :return: list of crops
+    """
+    return [image]

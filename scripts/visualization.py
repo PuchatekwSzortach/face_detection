@@ -4,6 +4,7 @@ Script with a bunch useful visualization functions like showing output of data g
 """
 
 import os
+import random
 
 import vlogging
 import numpy as np
@@ -28,7 +29,10 @@ def log_data_batches(data_generator, logger):
 
 def log_crops_predictions(data_generator, logger):
 
-    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    # model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    # model.load_weights(face.config.model_path)
+
+    model = face.models.get_medium_scale_model()
     model.load_weights(face.config.model_path)
 
     for _ in range(4):
@@ -40,6 +44,28 @@ def log_crops_predictions(data_generator, logger):
         images = [face.processing.scale_image_keeping_aspect_ratio(image, 100) for image in images]
 
         logger.info(vlogging.VisualRecord("Crops predictions", images, str(predictions)))
+
+
+def log_heatmaps(image_paths_file, logger):
+
+    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    model.load_weights(face.config.model_path)
+
+    paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
+    random.shuffle(paths)
+
+    counter = 0
+
+    while counter < 4:
+
+        path = paths.pop()
+        image = face.utilities.get_image(path)
+
+        # Only process images that aren't too small or too large
+        if image.shape[1] < 300 < 1000:
+
+            logger.info(vlogging.VisualRecord("Heatmap", 255 * image))
+            counter += 1
 
 
 def main():
@@ -60,6 +86,7 @@ def main():
 
     # log_data_batches(generator, logger)
     log_crops_predictions(generator, logger)
+    # log_heatmaps(image_paths_file, logger)
 
 
 if __name__ == "__main__":
