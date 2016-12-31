@@ -84,8 +84,8 @@ def main():
         image_paths_file, bounding_boxes_file, batch_size, face.config.crop_size)
 
     # log_data_batches(generator, logger)
-    log_crops_predictions(generator, logger)
-    # log_heatmaps(image_paths_file, logger)
+    # log_crops_predictions(generator, logger)
+    log_heatmaps(image_paths_file, logger)
 
 
 if __name__ == "__main__":
