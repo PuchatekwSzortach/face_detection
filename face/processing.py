@@ -47,7 +47,16 @@ def scale_image_keeping_aspect_ratio(image, size):
     return cv2.resize(image, target_shape)
 
 
-def get_data_batch(paths, bounding_boxes_map, index, batch_size):
+def get_data_batch(paths, bounding_boxes_map, index, batch_size, crop_size):
+    """
+    Create a single batch of face and non-face crops, along with labels.
+    :param paths: list of image paths
+    :param bounding_boxes_map: {path: face bounding box} dictionary
+    :param index: index from which paths list should be read
+    :param batch_size: size of batch to be returned
+    :param crop_size: size of each image crop in batch
+    :return: tuple (image_crops, labels)
+    """
 
     images_batch = []
     labels_batch = []
@@ -68,8 +77,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
 
                 raise InvalidBoundingBoxError("Invalid bounding box for image {}".format(path))
 
-            target_crop_size = face.config.crop_size
-            scale = face.geometry.get_scale(face_bounding_box, target_crop_size)
+            scale = face.geometry.get_scale(face_bounding_box, crop_size)
 
             scaled_image = get_scaled_image(image, scale)
             scaled_bounding_box = face.geometry.get_scaled_bounding_box(face_bounding_box, scale)
@@ -82,7 +90,7 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size):
                 scaled_bounding_box = face.geometry.flip_bounding_box_about_vertical_axis(
                     scaled_bounding_box, scaled_image.shape)
 
-            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=target_crop_size)
+            crops, labels = get_image_crops_labels_batch(scaled_image, scaled_bounding_box, crop_size=crop_size)
 
             images_batch.extend(crops)
             labels_batch.extend(labels)

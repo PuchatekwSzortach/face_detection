@@ -29,10 +29,8 @@ def log_data_batches(data_generator, logger):
 
 def log_crops_predictions(data_generator, logger):
 
-    # model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
-    # model.load_weights(face.config.model_path)
-
-    model = face.models.get_medium_scale_model()
+    # model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     for _ in range(4):
@@ -48,7 +46,7 @@ def log_crops_predictions(data_generator, logger):
 
 def log_heatmaps(image_paths_file, logger):
 
-    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    model = face.models.get_pretrained_vgg_model(iface.config.image_shape)
     model.load_weights(face.config.model_path)
 
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
@@ -82,7 +80,8 @@ def main():
     bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
     batch_size = face.config.batch_size
 
-    generator = face.data_generators.get_batches_generator(image_paths_file, bounding_boxes_file, batch_size)
+    generator = face.data_generators.get_batches_generator(
+        image_paths_file, bounding_boxes_file, batch_size, face.config.crop_size)
 
     # log_data_batches(generator, logger)
     log_crops_predictions(generator, logger)

@@ -40,14 +40,15 @@ def main():
     batch_size = face.config.batch_size
 
     # model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
-    model = face.models.get_medium_scale_model()
+    model = face.models.get_medium_scale_model(image_shape=face.config.image_shape)
+
     model.load_weights(face.config.model_path)
 
     training_data_generator = face.data_generators.get_batches_generator(
-        training_image_paths_file, training_bounding_boxes_file, batch_size)
+        training_image_paths_file, training_bounding_boxes_file, batch_size, face.config.crop_size)
 
     validation_data_generator = face.data_generators.get_batches_generator(
-        validation_image_paths_file, validation_bounding_boxes_file, batch_size)
+        validation_image_paths_file, validation_bounding_boxes_file, batch_size, face.config.crop_size)
 
     model.fit_generator(
         training_data_generator, samples_per_epoch=face.utilities.get_file_lines_count(training_image_paths_file),
