@@ -8,6 +8,7 @@ import multiprocessing
 
 import face.utilities
 
+
 class FaceCandidate:
     """
     A simple class representing an image crop that is to be examined for face presence.
@@ -32,6 +33,22 @@ class FaceCandidate:
         self.crop_coordinates = crop_coordinates
         self.cropped_image = cropped_image
         self.focus_coordinates = focus_coordinates
+
+
+class FaceDetection:
+    """
+    A very simple class representing a face detection. Contains face bounding box and detection score.
+    """
+
+    def __init__(self, bounding_box, score):
+        """
+        Constructor
+        :param bounding_box: bounding box of the face
+        :param score: confidence score of detection
+        """
+
+        self.bounding_box = bounding_box
+        self.score = score
 
 
 def get_face_candidates(image, crop_size, step):
@@ -133,3 +150,34 @@ class HeatmapComputer:
 
         return predictions
 
+
+class FaceDetector:
+    """
+    Class for detecting faces in images. Given an image, prediction model and scanning parameters,
+    returns a list of FaceDetection instances.
+    """
+
+    def __init__(self, image, model, crop_size, step, batch_size=multiprocessing.cpu_count()):
+        """
+        Constructor
+        :param image: image to search
+        :param model: face detection model
+        :param crop_size: size of crops fed to face detection model
+        :param step: step at which crops are taken from image
+        :param batch_size: size of batches fed to detection model. Defaults to cpu count, but for machines
+        with good GPU optimal value is likely to be significantly higher.
+        """
+
+        self.image = image
+        self.model = model
+        self.crop_size = crop_size
+        self.step = step
+        self.batch_size = batch_size
+
+    def get_faces_bounding_boxes(self):
+        """
+        Get bouding boxes of faces found in image FaceDetector instance was constructed with
+        :return: a list of bounding boxes
+        """
+
+        return []
