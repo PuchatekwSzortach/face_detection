@@ -12,10 +12,13 @@ log_path = "/tmp/faces/log.html"
 batch_size = 8
 
 # Size of crops data generators should return
-crop_size = 100
+crop_size = 224
 
 # Size of inputs models are trained on
 image_shape = (crop_size, crop_size, 3)
+
+# Step to be used to sample crops from images
+step = 64
 
 # Path to model file
 model_path = "../../data/faces/models/model.h5"

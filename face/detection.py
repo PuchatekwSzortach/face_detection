@@ -6,6 +6,8 @@ import shapely.geometry
 import numpy as np
 import multiprocessing
 
+import face.utilities
+
 class FaceCandidate:
     """
     A simple class representing an image crop that is to be examined for face presence.
@@ -51,6 +53,8 @@ def get_face_candidates(image, crop_size, step):
 
     face_candidates = []
 
+    offset = (crop_size - step) // 2
+
     y = 0
 
     while y + crop_size <= image.shape[0]:
@@ -61,7 +65,8 @@ def get_face_candidates(image, crop_size, step):
 
             crop_coordinates = shapely.geometry.box(x, y, x + crop_size, y + crop_size)
             cropped_image = image[y:y + crop_size, x:x + crop_size]
-            focus_coordinates = shapely.geometry.box(x, y, x + step, y + step)
+
+            focus_coordinates = shapely.geometry.box(x + offset, y + offset, x + crop_size - offset, y + crop_size - offset)
 
             candidate = FaceCandidate(crop_coordinates, cropped_image, focus_coordinates)
             face_candidates.append(candidate)
@@ -104,8 +109,27 @@ class HeatmapComputer:
 
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
-        face_candidates = get_face_candidates(self.image, self.batch_size, self.step)
+        face_candidates = get_face_candidates(self.image, self.crop_size, self.step)
+        predictions = self._get_predictions(face_candidates)
 
+        for face_candidate, prediction in zip(face_candidates, predictions):
 
+            x_start, y_start, x_end, y_end = [int(value) for value in face_candidate.focus_coordinates.bounds]
+            heatmap[y_start:y_end, x_start:x_end] = prediction
 
         return heatmap
+
+    def _get_predictions(self, face_candidates):
+
+        face_crops = [candidate.cropped_image for candidate in face_candidates]
+        face_crops_batches = face.utilities.get_batches(face_crops, self.batch_size)
+
+        predictions = []
+
+        for batch in face_crops_batches:
+
+            predictions_batch = self.model.predict(np.array(batch))
+            predictions.extend(predictions_batch)
+
+        return predictions
+

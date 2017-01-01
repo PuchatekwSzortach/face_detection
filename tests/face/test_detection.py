@@ -33,21 +33,21 @@ def test_get_face_candidates_single_row_crops():
     assert 33 == np.max(face_candidates[0].cropped_image)
 
     assert shapely.geometry.box(0, 0, 4, 4) == face_candidates[0].crop_coordinates
-    assert shapely.geometry.box(0, 0, 3, 3) == face_candidates[0].focus_coordinates
+    assert shapely.geometry.box(0, 0, 4, 4) == face_candidates[0].focus_coordinates
 
     # Assert properties of second candidate
     assert 3 == np.min(face_candidates[1].cropped_image)
     assert 36 == np.max(face_candidates[1].cropped_image)
 
     assert shapely.geometry.box(3, 0, 7, 4) == face_candidates[1].crop_coordinates
-    assert shapely.geometry.box(3, 0, 6, 3) == face_candidates[1].focus_coordinates
+    assert shapely.geometry.box(3, 0, 7, 4) == face_candidates[1].focus_coordinates
 
     # Assert properties of third candidate
     assert 6 == np.min(face_candidates[2].cropped_image)
     assert 39 == np.max(face_candidates[2].cropped_image)
 
     assert shapely.geometry.box(6, 0, 10, 4) == face_candidates[2].crop_coordinates
-    assert shapely.geometry.box(6, 0, 9, 3) == face_candidates[2].focus_coordinates
+    assert shapely.geometry.box(6, 0, 10, 4) == face_candidates[2].focus_coordinates
 
 
 def test_get_face_candidates_single_column_crops():
@@ -65,21 +65,21 @@ def test_get_face_candidates_single_column_crops():
     assert 24 == np.max(face_candidates[0].cropped_image)
 
     assert shapely.geometry.box(0, 0, 5, 5) == face_candidates[0].crop_coordinates
-    assert shapely.geometry.box(0, 0, 4, 4) == face_candidates[0].focus_coordinates
+    assert shapely.geometry.box(0, 0, 5, 5) == face_candidates[0].focus_coordinates
 
     # Assert properties of second candidate
     assert 20 == np.min(face_candidates[1].cropped_image)
     assert 44 == np.max(face_candidates[1].cropped_image)
 
     assert shapely.geometry.box(0, 4, 5, 9) == face_candidates[1].crop_coordinates
-    assert shapely.geometry.box(0, 4, 4, 8) == face_candidates[1].focus_coordinates
+    assert shapely.geometry.box(0, 4, 5, 9) == face_candidates[1].focus_coordinates
 
     # Assert properties of third candidate
     assert 40 == np.min(face_candidates[2].cropped_image)
     assert 64 == np.max(face_candidates[2].cropped_image)
 
     assert shapely.geometry.box(0, 8, 5, 13) == face_candidates[2].crop_coordinates
-    assert shapely.geometry.box(0, 8, 4, 12) == face_candidates[2].focus_coordinates
+    assert shapely.geometry.box(0, 8, 5, 13) == face_candidates[2].focus_coordinates
 
 
 def test_get_face_candidates_simple_grid():
@@ -97,47 +97,47 @@ def test_get_face_candidates_simple_grid():
     assert 44 == np.max(face_candidates[0].cropped_image)
 
     assert shapely.geometry.box(0, 0, 5, 5) == face_candidates[0].crop_coordinates
-    assert shapely.geometry.box(0, 0, 4, 4) == face_candidates[0].focus_coordinates
+    assert shapely.geometry.box(0, 0, 5, 5) == face_candidates[0].focus_coordinates
 
     # Assert properties of second candidate
     assert 4 == np.min(face_candidates[1].cropped_image)
     assert 48 == np.max(face_candidates[1].cropped_image)
 
     assert shapely.geometry.box(4, 0, 9, 5) == face_candidates[1].crop_coordinates
-    assert shapely.geometry.box(4, 0, 8, 4) == face_candidates[1].focus_coordinates
+    assert shapely.geometry.box(4, 0, 9, 5) == face_candidates[1].focus_coordinates
 
     # Assert properties of third candidate
     assert 40 == np.min(face_candidates[2].cropped_image)
     assert 84 == np.max(face_candidates[2].cropped_image)
 
     assert shapely.geometry.box(0, 4, 5, 9) == face_candidates[2].crop_coordinates
-    assert shapely.geometry.box(0, 4, 4, 8) == face_candidates[2].focus_coordinates
+    assert shapely.geometry.box(0, 4, 5, 9) == face_candidates[2].focus_coordinates
 
     # Assert properties of fourth candidate
     assert 44 == np.min(face_candidates[3].cropped_image)
     assert 88 == np.max(face_candidates[3].cropped_image)
 
     assert shapely.geometry.box(4, 4, 9, 9) == face_candidates[3].crop_coordinates
-    assert shapely.geometry.box(4, 4, 8, 8) == face_candidates[3].focus_coordinates
+    assert shapely.geometry.box(4, 4, 9, 9) == face_candidates[3].focus_coordinates
 
-#
-# def test_get_heatmap_simple():
-#
-#     image = np.zeros(shape=[10, 10])
-#
-#     mock_model = mock.Mock()
-#     mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
-#
-#     crop_size = 5
-#     step = 4
-#
-#     expected_heatmap = np.zeros(shape=[10, 10])
-#     expected_heatmap[:4, :4] = 0.2
-#     expected_heatmap[:4, 4:8] = 0.4
-#     expected_heatmap[4:8, :4] = 0.6
-#     expected_heatmap[4:8, 4:8] = 0.8
-#
-#     computer = face.detection.HeatmapComputer(image, mock_model, crop_size, step)
-#     actual_heatmap = computer.get_heatmap()
-#
-#     # assert np.all(expected_heatmap == actual_heatmap)
+
+def test_get_heatmap_single_batch():
+
+    image = np.zeros(shape=[10, 10])
+
+    mock_model = mock.Mock()
+    mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
+
+    crop_size = 5
+    step = 4
+
+    expected_heatmap = np.zeros(shape=[10, 10])
+    expected_heatmap[:4, :4] = 0.2
+    expected_heatmap[:4, 4:9] = 0.4
+    expected_heatmap[4:9, :4] = 0.6
+    expected_heatmap[4:9, 4:9] = 0.8
+
+    computer = face.detection.HeatmapComputer(image, mock_model, crop_size, step)
+    actual_heatmap = computer.get_heatmap()
+
+    assert np.allclose(actual_heatmap, expected_heatmap)

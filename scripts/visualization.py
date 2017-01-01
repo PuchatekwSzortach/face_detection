@@ -14,6 +14,7 @@ import face.data_generators
 import face.processing
 import face.models
 import face.config
+import face.detection
 
 
 def log_data_batches(data_generator, logger):
@@ -46,7 +47,8 @@ def log_crops_predictions(data_generator, logger):
 
 def log_heatmaps(image_paths_file, logger):
 
-    model = face.models.get_pretrained_vgg_model(iface.config.image_shape)
+    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
@@ -54,15 +56,21 @@ def log_heatmaps(image_paths_file, logger):
 
     counter = 0
 
-    while counter < 4:
+    while counter < 10:
 
         path = paths.pop()
         image = face.utilities.get_image(path)
 
         # Only process images that aren't too small or too large
-        if image.shape[1] < 300 < 1000:
+        if 300 < image.shape[1] < 1000:
 
-            logger.info(vlogging.VisualRecord("Heatmap", 255 * image))
+            heatmap = face.detection.HeatmapComputer(
+                image, model, crop_size=face.config.crop_size, step=face.config.step).get_heatmap()
+
+            scaled_images = [255 * image, 255 * heatmap]
+            scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
+
+            logger.info(vlogging.VisualRecord("Heatmap", scaled_images, str(image.shape)))
             counter += 1
 
 
