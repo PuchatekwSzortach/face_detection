@@ -127,28 +127,28 @@ class HeatmapComputer:
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
         face_candidates = get_face_candidates(self.image, self.crop_size, self.step)
-        predictions = self._get_predictions(face_candidates)
+        scores = self._get_candidate_scores(face_candidates)
 
-        for face_candidate, prediction in zip(face_candidates, predictions):
+        for face_candidate, score in zip(face_candidates, scores):
 
             x_start, y_start, x_end, y_end = [int(value) for value in face_candidate.focus_coordinates.bounds]
-            heatmap[y_start:y_end, x_start:x_end] = prediction
+            heatmap[y_start:y_end, x_start:x_end] = score
 
         return heatmap
 
-    def _get_predictions(self, face_candidates):
+    def _get_candidate_scores(self, face_candidates):
 
         face_crops = [candidate.cropped_image for candidate in face_candidates]
         face_crops_batches = face.utilities.get_batches(face_crops, self.batch_size)
 
-        predictions = []
+        scores = []
 
         for batch in face_crops_batches:
 
             predictions_batch = self.model.predict(np.array(batch))
-            predictions.extend(predictions_batch)
+            scores.extend(predictions_batch)
 
-        return predictions
+        return scores
 
 
 class FaceDetector:
@@ -180,4 +180,30 @@ class FaceDetector:
         :return: a list of bounding boxes
         """
 
-        return []
+        face_candidates = get_face_candidates(self.image, self.crop_size, self.step)
+        scores = self._get_candidate_scores(face_candidates)
+
+        face_detections = []
+
+        for candidate, score in zip(face_candidates, scores):
+
+            if score > 0.2:
+
+                detection = FaceDetection(candidate.crop_coordinates, score)
+                face_detections.append(detection)
+
+        return [detection.bounding_box for detection in face_detections]
+
+    def _get_candidate_scores(self, face_candidates):
+
+        face_crops = [candidate.cropped_image for candidate in face_candidates]
+        face_crops_batches = face.utilities.get_batches(face_crops, self.batch_size)
+
+        scores = []
+
+        for batch in face_crops_batches:
+
+            predictions_batch = self.model.predict(np.array(batch))
+            scores.extend(predictions_batch)
+
+        return scores
