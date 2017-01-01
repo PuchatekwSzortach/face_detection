@@ -3,7 +3,8 @@ Module with high level functionality for face detection
 """
 
 import shapely.geometry
-
+import numpy as np
+import multiprocessing
 
 class FaceCandidate:
     """
@@ -70,3 +71,41 @@ def get_face_candidates(image, crop_size, step):
         y += step
 
     return face_candidates
+
+
+class HeatmapComputer:
+    """
+    Class for computing face presence heatmap given an image, prediction model and scanning parameters.
+    """
+
+    def __init__(self, image, model, crop_size, step, batch_size=multiprocessing.cpu_count()):
+        """
+        Constructor
+        :param image: image to compute heatmap for
+        :param model: face prediction model
+        :param crop_size: size of crops on which prediction should be made
+        :param step: step between each crop
+        :param batch_size: batch size to be used by prediction model. A good start is number of cpus,
+        but for machines with high end GPU, a considerably larger number might be optimal. Defaults to
+        cpu count.
+        """
+
+        self.image = image
+        self.model = model
+        self.crop_size = crop_size
+        self.step = step
+        self.batch_size = batch_size
+
+    def get_heatmap(self):
+        """
+        Returns heatmap
+        :return: 2D numpy array of same size as image used to construct class HeatmapComputer instance
+        """
+
+        heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
+
+        face_candidates = get_face_candidates(self.image, self.batch_size, self.step)
+
+
+
+        return heatmap

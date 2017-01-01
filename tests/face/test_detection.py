@@ -2,6 +2,8 @@
 Tests for face.detection module
 """
 
+import mock
+
 import numpy as np
 import shapely.geometry
 import pytest
@@ -117,3 +119,25 @@ def test_get_face_candidates_simple_grid():
 
     assert shapely.geometry.box(4, 4, 9, 9) == face_candidates[3].crop_coordinates
     assert shapely.geometry.box(4, 4, 8, 8) == face_candidates[3].focus_coordinates
+
+#
+# def test_get_heatmap_simple():
+#
+#     image = np.zeros(shape=[10, 10])
+#
+#     mock_model = mock.Mock()
+#     mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
+#
+#     crop_size = 5
+#     step = 4
+#
+#     expected_heatmap = np.zeros(shape=[10, 10])
+#     expected_heatmap[:4, :4] = 0.2
+#     expected_heatmap[:4, 4:8] = 0.4
+#     expected_heatmap[4:8, :4] = 0.6
+#     expected_heatmap[4:8, 4:8] = 0.8
+#
+#     computer = face.detection.HeatmapComputer(image, mock_model, crop_size, step)
+#     actual_heatmap = computer.get_heatmap()
+#
+#     # assert np.all(expected_heatmap == actual_heatmap)

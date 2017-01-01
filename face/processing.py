@@ -210,17 +210,3 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()
-
-
-def get_image_crops(image, crop_size, step_size):
-    """
-    Given an input image, crop size and step size, return a list of image crops.
-    Each crop is crop_size x crop_size large. Cropping begins at position (0, 0) and goes along x-axis at step_size.
-    Once no whole crop can be taken, algorithm goes down by step_size and begins row-scanning again, until crops
-    across whole image have been taken.
-    :param image: image
-    :param crop_size: size crops should have
-    :param step_size: step at which crops should be taken
-    :return: list of crops
-    """
-    return [image]

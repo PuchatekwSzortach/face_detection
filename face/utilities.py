@@ -55,3 +55,18 @@ def get_image(path):
     """
 
     return cv2.imread(path) / 255
+
+
+def get_batches(data, batch_size):
+    """
+    Give a list of data and a batch size, return a list of batches.
+    Each batch is guaranteed to be a list of batch_size elements,
+    apart for last one which is of length data % batch_size.
+    :param data: list
+    :param batch_size: integer
+    :return: list of lists
+    """
+
+    return [data[index:index + batch_size] for index in range(0, len(data), batch_size)]
+
+
