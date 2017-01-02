@@ -12,6 +12,8 @@ import tqdm
 import face.config
 import face.utilities
 import face.geometry
+import face.models
+import face.detection
 
 
 def does_opencv_detect_face_correctly(image, face_bounding_box, cascade_classifier):
@@ -57,7 +59,50 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
             value = 1 if does_opencv_detect_face_correctly(image, face_bounding_box, cascade_classifier) else 0
             detection_scores.append(value)
 
-    print("Accuracy is {}".format(np.mean(detection_scores)))
+    print("Opencv accuracy is {}".format(np.mean(detection_scores)))
+
+
+def does_model_detect_face_correctly(image, face_bounding_box, model):
+
+    detections = face.detection.FaceDetector(
+        image, model, crop_size=face.config.crop_size, step=face.config.step).get_faces_bounding_boxes()
+
+    # There should be exactly one face detection in image
+    if len(detections) != 1:
+
+        return False
+
+    else:
+
+        is_detection_correct = face.geometry.get_intersection_over_union(
+            face_bounding_box, detections[0]) > 0.5
+
+        return is_detection_correct
+
+
+def check_model_accuracy(image_paths, bounding_boxes_map):
+
+    detection_scores = []
+
+    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    # model = face.models.get_medium_scale_model(face.config.image_shape)
+    model.load_weights(face.config.model_path)
+
+    for path in tqdm.tqdm(image_paths):
+
+        image = face.utilities.get_image(path)
+
+        image_bounding_box = shapely.geometry.box(0, 0, image.shape[1], image.shape[0])
+        face_bounding_box = bounding_boxes_map[os.path.basename(path)]
+
+        # Only try to search for faces if they are larger than 1% of image. If they are smaller,
+        # ground truth bounding box probably is incorrect
+        if face.geometry.get_intersection_over_union(image_bounding_box, face_bounding_box) > 0.01:
+
+            value = 1 if does_model_detect_face_correctly(image, face_bounding_box, model) else 0
+            detection_scores.append(value)
+
+    print("Model accuracy is {}".format(np.mean(detection_scores)))
 
 
 def main():
@@ -74,7 +119,8 @@ def main():
     image_paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
     bounding_boxes_map = face.geometry.get_bounding_boxes_map(bounding_boxes_file)
 
-    check_opencv_accuracy(image_paths, bounding_boxes_map)
+    # check_opencv_accuracy(image_paths, bounding_boxes_map)
+    check_model_accuracy(image_paths, bounding_boxes_map)
 
 
 if __name__ == "__main__":
