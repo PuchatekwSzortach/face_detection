@@ -141,3 +141,54 @@ def test_get_heatmap_single_batch():
     actual_heatmap = computer.get_heatmap()
 
     assert np.allclose(actual_heatmap, expected_heatmap)
+
+
+def test_get_unique_face_detections_one_group_only():
+
+    bounding_boxes = [
+        shapely.geometry.box(0, 0, 10, 10),
+        shapely.geometry.box(1, 1, 11, 11),
+        shapely.geometry.box(2, 2, 12, 12)
+    ]
+
+    face_detections = [
+        face.detection.FaceDetection(bounding_boxes[0], 0.9),
+        face.detection.FaceDetection(bounding_boxes[1], 0.98),
+        face.detection.FaceDetection(bounding_boxes[2], 0.95)
+    ]
+
+    expected_results = [
+        face.detection.FaceDetection(bounding_boxes[1], 0.98)
+    ]
+
+    actual_results = face.detection.get_unique_face_detections(face_detections)
+
+    assert expected_results == actual_results
+
+
+def test_get_unique_face_detections_two_groups():
+
+    bounding_boxes = [
+        shapely.geometry.box(0, 0, 10, 10),
+        shapely.geometry.box(1, 1, 11, 11),
+        shapely.geometry.box(2, 2, 12, 12),
+        shapely.geometry.box(100, 100, 110, 110),
+        shapely.geometry.box(101, 101, 111, 111)
+    ]
+
+    face_detections = [
+        face.detection.FaceDetection(bounding_boxes[0], 0.9),
+        face.detection.FaceDetection(bounding_boxes[1], 0.98),
+        face.detection.FaceDetection(bounding_boxes[2], 0.95),
+        face.detection.FaceDetection(bounding_boxes[3], 0.9),
+        face.detection.FaceDetection(bounding_boxes[4], 0.95)
+    ]
+
+    expected_results = [
+        face.detection.FaceDetection(bounding_boxes[1], 0.98),
+        face.detection.FaceDetection(bounding_boxes[4], 0.95)
+    ]
+
+    actual_results = face.detection.get_unique_face_detections(face_detections)
+
+    assert expected_results == actual_results

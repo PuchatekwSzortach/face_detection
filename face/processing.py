@@ -202,7 +202,7 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
         are_coordinates_legal = x >= 0 and y >= 0 and \
                                 x + crop_size < image.shape[1] and y + crop_size < image.shape[0]
 
-        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.1
+        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
 
         if are_coordinates_legal and is_iou_low:
 

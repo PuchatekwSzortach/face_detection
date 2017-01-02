@@ -7,6 +7,7 @@ import numpy as np
 import multiprocessing
 
 import face.utilities
+import face.geometry
 
 
 class FaceCandidate:
@@ -49,6 +50,19 @@ class FaceDetection:
 
         self.bounding_box = bounding_box
         self.score = score
+
+    def __eq__(self, other):
+        """
+        Equality comparison
+        :param other: object to compare to
+        :return: boolean value
+        """
+
+        if not isinstance(other, self.__class__):
+
+            return False
+
+        return self.bounding_box.equals(other.bounding_box) and self.score == other.score
 
 
 def get_face_candidates(image, crop_size, step):
@@ -149,6 +163,41 @@ class HeatmapComputer:
             scores.extend(predictions_batch)
 
         return scores
+
+
+def get_unique_face_detections(face_detections):
+    """
+    Given a list of FaceDetection objects, return only unique face detections, filtering out similar detections
+    so that for each group of similar detections only a single one remains in output list
+    :param face_detections: list of FaceDetection objects
+    :return: list of FaceDetection objects
+    """
+
+    unique_detections = []
+
+    for detection in face_detections:
+
+        unique_id = 0
+        similar_detection_found = False
+
+        while unique_id < len(unique_detections) and similar_detection_found is False:
+
+            unique_detection = unique_detections[unique_id]
+
+            if face.geometry.get_intersection_over_union(detection.bounding_box, unique_detection.bounding_box) > 0.5:
+
+                unique_detections[unique_id] = unique_detection \
+                    if unique_detection.score > detection.score else detection
+
+                similar_detection_found = True
+
+            unique_id += 1
+
+        if similar_detection_found is False:
+
+            unique_detections.append(detection)
+
+    return unique_detections
 
 
 class FaceDetector:

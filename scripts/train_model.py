@@ -39,9 +39,8 @@ def main():
 
     batch_size = face.config.batch_size
 
-    # model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
-    model = face.models.get_medium_scale_model(image_shape=face.config.image_shape)
-
+    model = face.models.get_pretrained_vgg_model(image_shape=face.config.image_shape)
+    # model = face.models.get_medium_scale_model(image_shape=face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     training_data_generator = face.data_generators.get_batches_generator(

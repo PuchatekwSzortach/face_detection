@@ -31,11 +31,11 @@ def log_data_batches(data_generator, logger):
 
 def log_crops_predictions(data_generator, logger):
 
-    # model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    model = face.models.get_medium_scale_model(face.config.image_shape)
+    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
-    for _ in range(4):
+    for _ in range(8):
 
         images, _ = next(data_generator)
         predictions = model.predict(images)
