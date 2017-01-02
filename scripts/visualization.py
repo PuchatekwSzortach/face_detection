@@ -129,7 +129,6 @@ def main():
     log_face_detections(image_paths_file, logger)
 
 
-
 if __name__ == "__main__":
 
     main()

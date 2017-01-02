@@ -184,7 +184,7 @@ def get_unique_face_detections(face_detections):
 
             unique_detection = unique_detections[unique_id]
 
-            if face.geometry.get_intersection_over_union(detection.bounding_box, unique_detection.bounding_box) > 0.5:
+            if face.geometry.get_intersection_over_union(detection.bounding_box, unique_detection.bounding_box) > 0.3:
 
                 unique_detections[unique_id] = unique_detection \
                     if unique_detection.score > detection.score else detection
@@ -241,7 +241,9 @@ class FaceDetector:
                 detection = FaceDetection(candidate.crop_coordinates, score)
                 face_detections.append(detection)
 
-        return [detection.bounding_box for detection in face_detections]
+        unique_detections = get_unique_face_detections(face_detections)
+
+        return [detection.bounding_box for detection in unique_detections]
 
     def _get_candidate_scores(self, face_candidates):
 
