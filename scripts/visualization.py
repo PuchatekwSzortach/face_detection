@@ -66,7 +66,7 @@ def log_heatmaps(image_paths_file, logger):
         if 300 < image.shape[1] < 1000:
 
             heatmap = face.detection.HeatmapComputer(
-                image, model, crop_size=face.config.crop_size, step=face.config.step).get_heatmap()
+                image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_heatmap()
 
             scaled_images = [255 * image, 255 * heatmap]
             scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
@@ -95,7 +95,7 @@ def log_face_detections(image_paths_file, logger):
         if 300 < image.shape[1] < 1000:
 
             bounding_boxes = face.detection.FaceDetector(
-                image, model, crop_size=face.config.crop_size, step=face.config.step).get_faces_bounding_boxes()
+                image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_faces_bounding_boxes()
 
             for box in bounding_boxes:
 

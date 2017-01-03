@@ -65,7 +65,7 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
 def does_model_detect_face_correctly(image, face_bounding_box, model):
 
     detections = face.detection.FaceDetector(
-        image, model, crop_size=face.config.crop_size, step=face.config.step).get_faces_bounding_boxes()
+        image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_faces_bounding_boxes()
 
     # There should be exactly one face detection in image
     if len(detections) != 1:

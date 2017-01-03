@@ -11,20 +11,20 @@ import pytest
 import face.detection
 
 
-def test_test_get_face_candidates_check_raises_on_step_larger_than_crop_size():
+def test_test_get_face_candidates_check_raises_on_stride_larger_than_crop_size():
 
     with pytest.raises(ValueError):
 
-        face.detection.get_face_candidates(np.zeros(shape=[10, 10]), crop_size=4, step=5)
+        face.detection.get_face_candidates(np.zeros(shape=[10, 10]), crop_size=4, stride=5)
 
 
 def test_get_face_candidates_single_row_crops():
 
     image = np.arange(40).reshape([4, 10])
     crop_size = 4
-    step = 3
+    stride = 3
 
-    face_candidates = face.detection.get_face_candidates(image, crop_size, step)
+    face_candidates = face.detection.get_face_candidates(image, crop_size, stride)
 
     assert 3 == len(face_candidates)
 
@@ -54,9 +54,9 @@ def test_get_face_candidates_single_column_crops():
 
     image = np.arange(75).reshape([15, 5])
     crop_size = 5
-    step = 4
+    stride = 4
 
-    face_candidates = face.detection.get_face_candidates(image, crop_size, step)
+    face_candidates = face.detection.get_face_candidates(image, crop_size, stride)
 
     assert 3 == len(face_candidates)
 
@@ -86,9 +86,9 @@ def test_get_face_candidates_simple_grid():
 
     image = np.arange(100).reshape([10, 10])
     crop_size = 5
-    step = 4
+    stride = 4
 
-    face_candidates = face.detection.get_face_candidates(image, crop_size, step)
+    face_candidates = face.detection.get_face_candidates(image, crop_size, stride)
 
     assert 4 == len(face_candidates)
 
@@ -129,7 +129,7 @@ def test_get_heatmap_single_batch():
     mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
 
     crop_size = 5
-    step = 4
+    stride = 4
 
     expected_heatmap = np.zeros(shape=[10, 10])
     expected_heatmap[:4, :4] = 0.2
@@ -137,7 +137,7 @@ def test_get_heatmap_single_batch():
     expected_heatmap[4:9, :4] = 0.6
     expected_heatmap[4:9, 4:9] = 0.8
 
-    computer = face.detection.HeatmapComputer(image, mock_model, crop_size, step)
+    computer = face.detection.HeatmapComputer(image, mock_model, crop_size, stride)
     actual_heatmap = computer.get_heatmap()
 
     assert np.allclose(actual_heatmap, expected_heatmap)

@@ -65,26 +65,26 @@ class FaceDetection:
         return self.bounding_box.equals(other.bounding_box) and self.score == other.score
 
 
-def get_face_candidates(image, crop_size, step):
+def get_face_candidates(image, crop_size, stride):
     """
-    Given an image, crop size and step, get list of face candidates - crops of input image
-    that will be examined for face presence. Each crop is of crop_size and crops are taken at step distance from
-     upper left corner of one crop to next crop (thus crops might be overlapping if step is smaller than crop_size).
+    Given an image, crop size and stride, get list of face candidates - crops of input image
+    that will be examined for face presence. Each crop is of crop_size and crops are taken at stride distance from
+     upper left corner of one crop to next crop (thus crops might be overlapping if stride is smaller than crop_size).
      Once all possible crops have been taken scanning image in one row, scanning proceeds from first column of
-     row step away from current row.
+     row stride away from current row.
     :param image: image from which crops are to be taken
     :param crop_size: size of each crop
-    :param step: step at which crops should be taken. Must be not larger than crop size.
+    :param stride: stride at which crops should be taken. Must be not larger than crop size.
     :return: list of FaceCandidate objects
     """
 
-    if crop_size < step:
+    if crop_size < stride:
 
-        raise ValueError("Crop size ({}) must be not smaller than step size ({})".format(crop_size, step))
+        raise ValueError("Crop size ({}) must be not smaller than stride size ({})".format(crop_size, stride))
 
     face_candidates = []
 
-    offset = (crop_size - step) // 2
+    offset = (crop_size - stride) // 2
 
     y = 0
 
@@ -102,9 +102,9 @@ def get_face_candidates(image, crop_size, step):
             candidate = FaceCandidate(crop_coordinates, cropped_image, focus_coordinates)
             face_candidates.append(candidate)
 
-            x += step
+            x += stride
 
-        y += step
+        y += stride
 
     return face_candidates
 
@@ -114,13 +114,13 @@ class HeatmapComputer:
     Class for computing face presence heatmap given an image, prediction model and scanning parameters.
     """
 
-    def __init__(self, image, model, crop_size, step, batch_size=multiprocessing.cpu_count()):
+    def __init__(self, image, model, crop_size, stride, batch_size=multiprocessing.cpu_count()):
         """
         Constructor
         :param image: image to compute heatmap for
         :param model: face prediction model
         :param crop_size: size of crops on which prediction should be made
-        :param step: step between each crop
+        :param stride: stride between each crop
         :param batch_size: batch size to be used by prediction model. A good start is number of cpus,
         but for machines with high end GPU, a considerably larger number might be optimal. Defaults to
         cpu count.
@@ -129,7 +129,7 @@ class HeatmapComputer:
         self.image = image
         self.model = model
         self.crop_size = crop_size
-        self.step = step
+        self.stride = stride
         self.batch_size = batch_size
 
     def get_heatmap(self):
@@ -140,7 +140,7 @@ class HeatmapComputer:
 
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
-        face_candidates = get_face_candidates(self.image, self.crop_size, self.step)
+        face_candidates = get_face_candidates(self.image, self.crop_size, self.stride)
         scores = self._get_candidate_scores(face_candidates)
 
         for face_candidate, score in zip(face_candidates, scores):
@@ -206,13 +206,13 @@ class FaceDetector:
     returns a list of FaceDetection instances.
     """
 
-    def __init__(self, image, model, crop_size, step, batch_size=multiprocessing.cpu_count()):
+    def __init__(self, image, model, crop_size, stride, batch_size=multiprocessing.cpu_count()):
         """
         Constructor
         :param image: image to search
         :param model: face detection model
         :param crop_size: size of crops fed to face detection model
-        :param step: step at which crops are taken from image
+        :param stride: stride at which crops are taken from image
         :param batch_size: size of batches fed to detection model. Defaults to cpu count, but for machines
         with good GPU optimal value is likely to be significantly higher.
         """
@@ -220,7 +220,7 @@ class FaceDetector:
         self.image = image
         self.model = model
         self.crop_size = crop_size
-        self.step = step
+        self.stride = stride
         self.batch_size = batch_size
 
     def get_faces_bounding_boxes(self):
@@ -229,7 +229,7 @@ class FaceDetector:
         :return: a list of bounding boxes
         """
 
-        face_candidates = get_face_candidates(self.image, self.crop_size, self.step)
+        face_candidates = get_face_candidates(self.image, self.crop_size, self.stride)
         scores = self._get_candidate_scores(face_candidates)
 
         face_detections = []
