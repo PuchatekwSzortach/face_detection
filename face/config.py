@@ -18,7 +18,7 @@ crop_size = 224
 image_shape = (crop_size, crop_size, 3)
 
 # Step to be used to sample crops from images
-step = 64
+step = 32
 
 # Path to model file
 model_path = "../../data/faces/models/model.h5"
