@@ -108,24 +108,6 @@ def get_face_candidates(image, crop_size, stride):
     return face_candidates
 
 
-class FaceSearchConfiguration:
-    """
-    A simple class that bundles together common face search parameters
-    """
-
-    def __init__(self, crop_size, stride, batch_size):
-        """
-        Constructor
-        :param crop_size: size of crops used to search for faces
-        :param stride: stride between successive crops
-        :param batch_size: batch size used by predictive model
-        """
-
-        self.crop_size = crop_size
-        self.stride = stride
-        self.batch_size = batch_size
-
-
 class HeatmapComputer:
     """
     Class for computing face presence heatmap given an image, prediction model and scanning parameters.

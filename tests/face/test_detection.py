@@ -9,6 +9,7 @@ import shapely.geometry
 import pytest
 
 import face.detection
+import face.config
 
 
 def test_test_get_face_candidates_check_raises_on_stride_larger_than_crop_size():
@@ -128,10 +129,7 @@ def test_get_heatmap_single_batch():
     mock_model = mock.Mock()
     mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
 
-    crop_size = 5
-    stride = 4
-
-    configuration = face.detection.FaceSearchConfiguration(crop_size=5, stride=4, batch_size=4)
+    configuration = face.config.FaceSearchConfiguration(crop_size=5, stride=4, batch_size=4)
 
     expected_heatmap = np.zeros(shape=[10, 10])
     expected_heatmap[:4, :4] = 0.2
