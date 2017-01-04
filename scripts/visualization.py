@@ -55,6 +55,12 @@ def log_heatmaps(image_paths_file, logger):
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
     random.shuffle(paths)
 
+    configuration = face.detection.FaceSearchConfiguration(
+        crop_size=face.config.crop_size,
+        stride=face.config.stride,
+        batch_size=face.config.batch_size
+    )
+
     counter = 0
 
     while counter < 10:
@@ -65,8 +71,7 @@ def log_heatmaps(image_paths_file, logger):
         # Only process images that aren't too small or too large
         if 300 < image.shape[1] < 1000:
 
-            heatmap = face.detection.HeatmapComputer(
-                image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_heatmap()
+            heatmap = face.detection.HeatmapComputer(image, model, configuration).get_heatmap()
 
             scaled_images = [255 * image, 255 * heatmap]
             scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
@@ -84,6 +89,12 @@ def log_face_detections(image_paths_file, logger):
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
     random.shuffle(paths)
 
+    configuration = face.detection.FaceSearchConfiguration(
+        crop_size=face.config.crop_size,
+        stride=face.config.stride,
+        batch_size=face.config.batch_size
+    )
+
     counter = 0
 
     while counter < 10:
@@ -94,8 +105,7 @@ def log_face_detections(image_paths_file, logger):
         # Only process images that aren't too small or too large
         if 300 < image.shape[1] < 1000:
 
-            bounding_boxes = face.detection.FaceDetector(
-                image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_faces_bounding_boxes()
+            bounding_boxes = face.detection.FaceDetector(image, model, configuration).get_faces_bounding_boxes()
 
             for box in bounding_boxes:
 
@@ -118,10 +128,9 @@ def main():
 
     image_paths_file = os.path.join(data_directory, "training_image_paths.txt")
     bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
-    batch_size = face.config.batch_size
 
     generator = face.data_generators.get_batches_generator(
-        image_paths_file, bounding_boxes_file, batch_size, face.config.crop_size)
+        image_paths_file, bounding_boxes_file, face.config.batch_size, face.config.crop_size)
 
     # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)

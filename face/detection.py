@@ -4,7 +4,6 @@ Module with high level functionality for face detection
 
 import shapely.geometry
 import numpy as np
-import multiprocessing
 
 import face.utilities
 import face.geometry
@@ -109,28 +108,40 @@ def get_face_candidates(image, crop_size, stride):
     return face_candidates
 
 
+class FaceSearchConfiguration:
+    """
+    A simple class that bundles together common face search parameters
+    """
+
+    def __init__(self, crop_size, stride, batch_size):
+        """
+        Constructor
+        :param crop_size: size of crops used to search for faces
+        :param stride: stride between successive crops
+        :param batch_size: batch size used by predictive model
+        """
+
+        self.crop_size = crop_size
+        self.stride = stride
+        self.batch_size = batch_size
+
+
 class HeatmapComputer:
     """
     Class for computing face presence heatmap given an image, prediction model and scanning parameters.
     """
 
-    def __init__(self, image, model, crop_size, stride, batch_size=multiprocessing.cpu_count()):
+    def __init__(self, image, model, configuration):
         """
         Constructor
         :param image: image to compute heatmap for
         :param model: face prediction model
-        :param crop_size: size of crops on which prediction should be made
-        :param stride: stride between each crop
-        :param batch_size: batch size to be used by prediction model. A good start is number of cpus,
-        but for machines with high end GPU, a considerably larger number might be optimal. Defaults to
-        cpu count.
+        :param configuration: FaceSearchConfiguration instance
         """
 
         self.image = image
         self.model = model
-        self.crop_size = crop_size
-        self.stride = stride
-        self.batch_size = batch_size
+        self.configuration = configuration
 
     def get_heatmap(self):
         """
@@ -140,7 +151,7 @@ class HeatmapComputer:
 
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
-        face_candidates = get_face_candidates(self.image, self.crop_size, self.stride)
+        face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
         scores = self._get_candidate_scores(face_candidates)
 
         for face_candidate, score in zip(face_candidates, scores):
@@ -153,7 +164,7 @@ class HeatmapComputer:
     def _get_candidate_scores(self, face_candidates):
 
         face_crops = [candidate.cropped_image for candidate in face_candidates]
-        face_crops_batches = face.utilities.get_batches(face_crops, self.batch_size)
+        face_crops_batches = face.utilities.get_batches(face_crops, self.configuration.batch_size)
 
         scores = []
 
@@ -206,22 +217,17 @@ class FaceDetector:
     returns a list of FaceDetection instances.
     """
 
-    def __init__(self, image, model, crop_size, stride, batch_size=multiprocessing.cpu_count()):
+    def __init__(self, image, model, configuration):
         """
         Constructor
         :param image: image to search
         :param model: face detection model
-        :param crop_size: size of crops fed to face detection model
-        :param stride: stride at which crops are taken from image
-        :param batch_size: size of batches fed to detection model. Defaults to cpu count, but for machines
-        with good GPU optimal value is likely to be significantly higher.
+        :param configuration: FaceSearchConfiguration instance
         """
 
         self.image = image
         self.model = model
-        self.crop_size = crop_size
-        self.stride = stride
-        self.batch_size = batch_size
+        self.configuration = configuration
 
     def get_faces_bounding_boxes(self):
         """
@@ -229,14 +235,14 @@ class FaceDetector:
         :return: a list of bounding boxes
         """
 
-        face_candidates = get_face_candidates(self.image, self.crop_size, self.stride)
+        face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
         scores = self._get_candidate_scores(face_candidates)
 
         face_detections = []
 
         for candidate, score in zip(face_candidates, scores):
 
-            if score > 0.2:
+            if score > 0.5:
 
                 detection = FaceDetection(candidate.crop_coordinates, score)
                 face_detections.append(detection)
@@ -248,7 +254,7 @@ class FaceDetector:
     def _get_candidate_scores(self, face_candidates):
 
         face_crops = [candidate.cropped_image for candidate in face_candidates]
-        face_crops_batches = face.utilities.get_batches(face_crops, self.batch_size)
+        face_crops_batches = face.utilities.get_batches(face_crops, self.configuration.batch_size)
 
         scores = []
 

@@ -62,10 +62,9 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
     print("Opencv accuracy is {}".format(np.mean(detection_scores)))
 
 
-def does_model_detect_face_correctly(image, face_bounding_box, model):
+def does_model_detect_face_correctly(image, face_bounding_box, model, configuration):
 
-    detections = face.detection.FaceDetector(
-        image, model, crop_size=face.config.crop_size, stride=face.config.stride).get_faces_bounding_boxes()
+    detections = face.detection.FaceDetector(image, model, configuration).get_faces_bounding_boxes()
 
     # There should be exactly one face detection in image
     if len(detections) != 1:
@@ -88,6 +87,12 @@ def check_model_accuracy(image_paths, bounding_boxes_map):
     # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
+    configuration = face.detection.FaceSearchConfiguration(
+        crop_size=face.config.crop_size,
+        stride=face.config.stride,
+        batch_size=face.config.batch_size
+    )
+
     for path in tqdm.tqdm(image_paths):
 
         image = face.utilities.get_image(path)
@@ -99,7 +104,7 @@ def check_model_accuracy(image_paths, bounding_boxes_map):
         # ground truth bounding box probably is incorrect
         if face.geometry.get_intersection_over_union(image_bounding_box, face_bounding_box) > 0.01:
 
-            value = 1 if does_model_detect_face_correctly(image, face_bounding_box, model) else 0
+            value = 1 if does_model_detect_face_correctly(image, face_bounding_box, model, configuration) else 0
             detection_scores.append(value)
 
     print("Model accuracy is {}".format(np.mean(detection_scores)))

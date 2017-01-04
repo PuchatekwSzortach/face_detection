@@ -131,13 +131,15 @@ def test_get_heatmap_single_batch():
     crop_size = 5
     stride = 4
 
+    configuration = face.detection.FaceSearchConfiguration(crop_size=5, stride=4, batch_size=4)
+
     expected_heatmap = np.zeros(shape=[10, 10])
     expected_heatmap[:4, :4] = 0.2
     expected_heatmap[:4, 4:9] = 0.4
     expected_heatmap[4:9, :4] = 0.6
     expected_heatmap[4:9, 4:9] = 0.8
 
-    computer = face.detection.HeatmapComputer(image, mock_model, crop_size, stride)
+    computer = face.detection.HeatmapComputer(image, mock_model, configuration)
     actual_heatmap = computer.get_heatmap()
 
     assert np.allclose(actual_heatmap, expected_heatmap)

@@ -9,7 +9,7 @@ data_directory = "../../data/faces/"
 log_path = "/tmp/faces/log.html"
 
 # Batch size to be used by prediction models
-batch_size = 8
+batch_size = 64
 
 # Size of crops data generators should return
 crop_size = 224
