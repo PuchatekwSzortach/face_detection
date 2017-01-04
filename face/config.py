@@ -50,13 +50,16 @@ min_face_size = 50
 # we only want to consider regions not smaller than min_face_to_image_ratio times x as possible face candidates
 min_face_to_image_ratio = 0.015
 
+# Ratio by which image should be scaled down on each successive move on image pyramid
+image_rescaling_ratio = 0.8
+
 
 class MultiScaleFaceSearchConfiguration(FaceSearchConfiguration):
     """
     A simple class that bundles together common multi scale face search parameters
     """
 
-    def __init__(self, crop_size, stride, batch_size, min_face_size, min_face_to_image_ratio):
+    def __init__(self, crop_size, stride, batch_size, min_face_size, min_face_to_image_ratio, image_rescaling_ratio):
         """
         Constructor
         :param crop_size: size of crops used to search for faces
@@ -68,12 +71,15 @@ class MultiScaleFaceSearchConfiguration(FaceSearchConfiguration):
         min_face_to_image_ratio times x as possible face candidates.
         In practice the larger value of min_face_size and (min_face_to_image_ratio x smallest image dimension) is used
          as smallest region used to search for faces.
+        :param image_rescaling_ratio: ratio by which image should be scaled down on each
+        successive move on image pyramid
         """
 
         super().__init__(crop_size, stride, batch_size)
 
         self.min_face_size = min_face_size
         self.min_face_to_image_ratio = min_face_to_image_ratio
+        self.image_rescaling_ratio = image_rescaling_ratio
 
 
 # Default multi scale face search configuration
