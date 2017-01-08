@@ -112,15 +112,28 @@ def log_face_detections_multiscale(image_paths_file, logger):
 
         image = face.utilities.get_image(path)
 
-        face_detections = face.detection.FaceDetector(
+        single_scale_face_detections = face.detection.FaceDetector(
             image, model, face.config.face_search_config).get_face_detections()
 
-        for face_detection in face_detections:
+        for face_detection in single_scale_face_detections:
 
             bounds = [int(value) for value in face_detection.bounding_box.bounds]
             cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
 
-        logger.info(vlogging.VisualRecord("Detections", image * 255, str(image.shape)))
+        multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
+            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
+
+        multi_scale_image = image.copy()
+
+        for face_detection in multi_scale_face_detections:
+
+            bounds = [int(value) for value in face_detection.bounding_box.bounds]
+
+            cv2.rectangle(
+                multi_scale_image,
+                (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
+
+        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255], str(image.shape)))
 
 
 def main():
@@ -142,8 +155,8 @@ def main():
     # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
-    log_face_detections(image_paths_file, logger)
-    # log_face_detections_multiscale(image_paths_file, logger)
+    # log_face_detections(image_paths_file, logger)
+    log_face_detections_multiscale(image_paths_file, logger)
 
 
 

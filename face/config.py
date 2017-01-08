@@ -48,7 +48,7 @@ min_face_size = 50
 
 # Minimum ratio of face to image we want to search for. For image of size x (along smaller dimension)
 # we only want to consider regions not smaller than min_face_to_image_ratio times x as possible face candidates
-min_face_to_image_ratio = 0.015
+min_face_to_image_ratio = 0.04
 
 # Ratio by which image should be scaled down on each successive move on image pyramid
 image_rescaling_ratio = 0.8
