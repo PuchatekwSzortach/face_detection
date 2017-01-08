@@ -93,3 +93,15 @@ def test_get_smallest_expected_face_size_vertical_image_size_is_the_cap():
     actual = face.processing.get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio)
 
     assert expected == actual
+
+
+def test_get_smallest_expected_face_size_3D_image_shape():
+
+    image_shape = [200, 500, 3]
+    min_face_size = 1
+    min_face_to_image_ratio = 0.1
+
+    expected = 20
+    actual = face.processing.get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio)
+
+    assert expected == actual

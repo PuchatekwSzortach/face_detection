@@ -222,5 +222,5 @@ def get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_imag
     :return: integer, larger of min_face_size and min(image_shape) * min_face_to_image_ratio
     """
 
-    image_ratio_based_size = int(min(image_shape) * min_face_to_image_ratio)
+    image_ratio_based_size = int(min(image_shape[:2]) * min_face_to_image_ratio)
     return max(min_face_size, image_ratio_based_size)

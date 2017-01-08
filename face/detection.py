@@ -7,6 +7,7 @@ import numpy as np
 
 import face.utilities
 import face.geometry
+import face.processing
 
 
 class FaceCandidate:
@@ -185,7 +186,7 @@ class MultiScaleHeatmapComputer:
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
         # Get smallest size at which we want to search for a face in the image
-        # smallest_face_size =
+        # smallest_face_size = face.processing.get_smallest_expected_face_size(image.shape)
 
         return heatmap
 
