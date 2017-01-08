@@ -148,14 +148,7 @@ class HeatmapComputer:
     def _get_candidate_scores(self, face_candidates):
 
         face_crops = [candidate.cropped_image for candidate in face_candidates]
-        face_crops_batches = face.utilities.get_batches(face_crops, self.configuration.batch_size)
-
-        scores = []
-
-        for batch in face_crops_batches:
-
-            predictions_batch = self.model.predict(np.array(batch))
-            scores.extend(predictions_batch)
+        scores = self.model.predict(np.array(face_crops), batch_size=self.configuration.batch_size)
 
         return scores
 
@@ -289,13 +282,6 @@ class FaceDetector:
     def _get_candidate_scores(self, face_candidates):
 
         face_crops = [candidate.cropped_image for candidate in face_candidates]
-        face_crops_batches = face.utilities.get_batches(face_crops, self.configuration.batch_size)
-
-        scores = []
-
-        for batch in face_crops_batches:
-
-            predictions_batch = self.model.predict(np.array(batch))
-            scores.extend(predictions_batch)
+        scores = self.model.predict(np.array(face_crops), batch_size=self.configuration.batch_size)
 
         return scores
