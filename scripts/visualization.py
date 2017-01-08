@@ -87,16 +87,40 @@ def log_face_detections(image_paths_file, logger):
         # Only process images that aren't too small or too large
         if 300 < image.shape[1] < 1000:
 
-            bounding_boxes = face.detection.FaceDetector(
-                image, model, face.config.face_search_config).get_faces_bounding_boxes()
+            face_detections = face.detection.FaceDetector(
+                image, model, face.config.face_search_config).get_face_detections()
 
-            for box in bounding_boxes:
+            for face_detection in face_detections:
 
-                bounds = [int(value) for value in box.bounds]
+                bounds = [int(value) for value in face_detection.bounding_box.bounds]
                 cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
 
             logger.info(vlogging.VisualRecord("Detections", image * 255, str(image.shape)))
             counter += 1
+
+
+def log_face_detections_multiscale(image_paths_file, logger):
+
+    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    # model = face.models.get_medium_scale_model(face.config.image_shape)
+    model.load_weights(face.config.model_path)
+
+    paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
+    random.shuffle(paths)
+
+    for path in tqdm.tqdm(paths[:10]):
+
+        image = face.utilities.get_image(path)
+
+        face_detections = face.detection.FaceDetector(
+            image, model, face.config.face_search_config).get_face_detections()
+
+        for face_detection in face_detections:
+
+            bounds = [int(value) for value in face_detection.bounding_box.bounds]
+            cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
+
+        logger.info(vlogging.VisualRecord("Detections", image * 255, str(image.shape)))
 
 
 def main():
@@ -119,6 +143,7 @@ def main():
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
     log_face_detections(image_paths_file, logger)
+    # log_face_detections_multiscale(image_paths_file, logger)
 
 
 

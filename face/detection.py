@@ -258,10 +258,10 @@ class FaceDetector:
         self.model = model
         self.configuration = configuration
 
-    def get_faces_bounding_boxes(self):
+    def get_face_detections(self):
         """
-        Get bouding boxes of faces found in image FaceDetector instance was constructed with
-        :return: a list of bounding boxes
+        Get face detections found in image instance was constructed with. Search is performed at a single scale.
+        :return: a list of FaceDetection instances
         """
 
         face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
@@ -276,9 +276,7 @@ class FaceDetector:
                 detection = FaceDetection(candidate.crop_coordinates, score)
                 face_detections.append(detection)
 
-        unique_detections = get_unique_face_detections(face_detections)
-
-        return [detection.bounding_box for detection in unique_detections]
+        return get_unique_face_detections(face_detections)
 
     def _get_candidate_scores(self, face_candidates):
 
@@ -286,3 +284,67 @@ class FaceDetector:
         scores = self.model.predict(np.array(face_crops), batch_size=self.configuration.batch_size)
 
         return scores
+
+
+# class MultiScaleFaceDetector:
+#     """
+#     Class for detecting faces in images. Faces are search for at multiple scales,
+#      as per configuration parameters.
+#     """
+#
+#     def __init__(self, image, model, configuration):
+#         """
+#         Constructor
+#         :param image: image to search
+#         :param model: face detection model
+#         :param configuration: MultiScaleFaceSearchConfiguration instance
+#         """
+#
+#         self.image = image
+#         self.model = model
+#         self.configuration = configuration
+#
+#     def get_faces_bounding_boxes(self):
+#         """
+#         Get bounding boxes of faces found in image instance was constructed with
+#         :return: a list of bounding boxes
+#         """
+#
+#         image = self._get_largest_scale_image()
+#
+#         candidates = []
+#
+#         while min(image.shape[:2]) > self.configuration.crop_size:
+#
+#             candidates = FaceDetector(image, self.model, self.configuration).get_faces_bounding_boxes()
+#
+#             image = face.processing.get_scaled_image(image, self.configuration.image_rescaling_ratio)
+#
+#         return []
+#
+#         # face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
+#         # scores = self._get_candidate_scores(face_candidates)
+#         #
+#         # face_detections = []
+#         #
+#         # for candidate, score in zip(face_candidates, scores):
+#         #
+#         #     if score > 0.5:
+#         #
+#         #         detection = FaceDetection(candidate.crop_coordinates, score)
+#         #         face_detections.append(detection)
+#         #
+#         # unique_detections = get_unique_face_detections(face_detections)
+#         #
+#         # return [detection.bounding_box for detection in unique_detections]
+#
+#     def _get_largest_scale_image(self):
+#
+#         # Get smallest size at which we want to search for a face in the image
+#         smallest_face_size = face.processing.get_smallest_expected_face_size(
+#             image_shape=self.image.shape, min_face_size=self.configuration.min_face_size,
+#             min_face_to_image_ratio=self.configuration.min_face_to_image_ratio)
+#
+#         scale = self.configuration.crop_size / smallest_face_size
+#
+#         return face.processing.get_scaled_image(self.image, scale)

@@ -64,7 +64,7 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
 
 def does_model_detect_face_correctly(image, face_bounding_box, model, configuration):
 
-    detections = face.detection.FaceDetector(image, model, configuration).get_faces_bounding_boxes()
+    detections = face.detection.FaceDetector(image, model, configuration).get_face_detections()
 
     # There should be exactly one face detection in image
     if len(detections) != 1:
@@ -74,7 +74,7 @@ def does_model_detect_face_correctly(image, face_bounding_box, model, configurat
     else:
 
         is_detection_correct = face.geometry.get_intersection_over_union(
-            face_bounding_box, detections[0]) > 0.5
+            face_bounding_box, detections[0].bounding_box) > 0.5
 
         return is_detection_correct
 
