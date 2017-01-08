@@ -4,6 +4,7 @@ Module with high level functionality for face detection
 
 import shapely.geometry
 import numpy as np
+import cv2
 
 import face.utilities
 import face.geometry
@@ -185,14 +186,29 @@ class MultiScaleHeatmapComputer:
 
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
-        # Get smallest size at which we want to search for a face in the image
-        # smallest_face_size = face.processing.get_smallest_expected_face_size(image.shape)
+        image = self._get_largest_scale_image()
+
+        while min(image.shape[:2]) > self.configuration.crop_size:
+
+            image = face.processing.get_scaled_image(image, self.configuration.image_rescaling_ratio)
+
+            single_scale_heatmap = HeatmapComputer(image, self.model, self.configuration).get_heatmap()
+            rescaled_single_scale_heatmap = cv2.resize(single_scale_heatmap, (heatmap.shape[1], heatmap.shape[0]))
+
+            heatmap = np.maximum(heatmap, rescaled_single_scale_heatmap)
 
         return heatmap
 
+    def _get_largest_scale_image(self):
 
+        # Get smallest size at which we want to search for a face in the image
+        smallest_face_size = face.processing.get_smallest_expected_face_size(
+            image_shape=self.image.shape, min_face_size=self.configuration.min_face_size,
+            min_face_to_image_ratio=self.configuration.min_face_to_image_ratio)
 
+        scale = self.configuration.crop_size / smallest_face_size
 
+        return face.processing.get_scaled_image(self.image, scale)
 
 
 def get_unique_face_detections(face_detections):

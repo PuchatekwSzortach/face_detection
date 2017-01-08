@@ -9,6 +9,7 @@ import random
 import vlogging
 import numpy as np
 import cv2
+import tqdm
 
 import face.utilities
 import face.data_generators
@@ -113,24 +114,20 @@ def log_heatmaps_multiscale(image_paths_file, logger):
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
     random.shuffle(paths)
 
-    counter = 0
+    for path in tqdm.tqdm(paths[:10]):
 
-    while counter < 10:
-
-        path = paths.pop()
         image = face.utilities.get_image(path)
 
-        # Only process images that are large
-        if 1000 < image.shape[1]:
+        single_scale_heatmap = face.detection.HeatmapComputer(
+            image, model, face.config.face_search_config).get_heatmap()
 
-            heatmap = face.detection.MultiScaleHeatmapComputer(
-                image, model, face.config.multi_scale_face_search_config).get_heatmap()
+        multi_scale_heatmap = face.detection.MultiScaleHeatmapComputer(
+            image, model, face.config.multi_scale_face_search_config).get_heatmap()
 
-            scaled_images = [255 * image, 255 * heatmap]
-            scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
+        scaled_images = [255 * image, 255 * single_scale_heatmap, 255 * multi_scale_heatmap]
+        scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
 
-            logger.info(vlogging.VisualRecord("Heatmap", scaled_images, str(image.shape)))
-            counter += 1
+        logger.info(vlogging.VisualRecord("Heatmap", scaled_images, str(image.shape)))
 
 
 def main():
