@@ -110,9 +110,10 @@ def get_face_candidates(image, crop_size, stride):
     return face_candidates
 
 
-class HeatmapComputer:
+class SingleScaleHeatmapComputer:
     """
     Class for computing face presence heatmap given an image, prediction model and scanning parameters.
+    Heatmap is computing only at a single scale.
     """
 
     def __init__(self, image, model, configuration):
@@ -153,10 +154,10 @@ class HeatmapComputer:
         return scores
 
 
-class MultiScaleHeatmapComputer:
+class HeatmapComputer:
     """
     Class for computing face presence heatmap given an image, prediction model and scanning parameters.
-    Scanning is performed at multiple scales.
+    Heatmap is computed at multiple scales as per configuration parameter.
     """
 
     def __init__(self, image, model, configuration):
@@ -185,7 +186,7 @@ class MultiScaleHeatmapComputer:
 
             image = face.processing.get_scaled_image(image, self.configuration.image_rescaling_ratio)
 
-            single_scale_heatmap = HeatmapComputer(image, self.model, self.configuration).get_heatmap()
+            single_scale_heatmap = SingleScaleHeatmapComputer(image, self.model, self.configuration).get_heatmap()
             rescaled_single_scale_heatmap = cv2.resize(single_scale_heatmap, (heatmap.shape[1], heatmap.shape[0]))
 
             heatmap = np.maximum(heatmap, rescaled_single_scale_heatmap)

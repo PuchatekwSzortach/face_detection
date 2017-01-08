@@ -137,7 +137,7 @@ def test_get_heatmap_single_batch():
     expected_heatmap[4:9, :4] = 0.6
     expected_heatmap[4:9, 4:9] = 0.8
 
-    computer = face.detection.HeatmapComputer(image, mock_model, configuration)
+    computer = face.detection.SingleScaleHeatmapComputer(image, mock_model, configuration)
     actual_heatmap = computer.get_heatmap()
 
     assert np.allclose(actual_heatmap, expected_heatmap)
