@@ -57,3 +57,39 @@ def test_get_scaled_image_vertical_image():
     scaled_image = face.processing.get_scaled_image(image, scale)
 
     assert (16, 8) == scaled_image.shape
+
+
+def test_get_smallest_expected_face_size_min_size_is_the_cap():
+
+    image_shape = [100, 200]
+    min_face_size = 50
+    min_face_to_image_ratio = 0.1
+
+    expected = 50
+    actual = face.processing.get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio)
+
+    assert expected == actual
+
+
+def test_get_smallest_expected_face_size_horizontal_image_size_is_the_cap():
+
+    image_shape = [100, 50]
+    min_face_size = 1
+    min_face_to_image_ratio = 0.1
+
+    expected = 5
+    actual = face.processing.get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio)
+
+    assert expected == actual
+
+
+def test_get_smallest_expected_face_size_vertical_image_size_is_the_cap():
+
+    image_shape = [200, 500]
+    min_face_size = 1
+    min_face_to_image_ratio = 0.1
+
+    expected = 20
+    actual = face.processing.get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio)
+
+    assert expected == actual

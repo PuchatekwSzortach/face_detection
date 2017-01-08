@@ -158,6 +158,42 @@ class HeatmapComputer:
         return scores
 
 
+class MultiScaleHeatmapComputer:
+    """
+    Class for computing face presence heatmap given an image, prediction model and scanning parameters.
+    Scanning is performed at multiple scales.
+    """
+
+    def __init__(self, image, model, configuration):
+        """
+        Constructor
+        :param image: image to compute heatmap for
+        :param model: face prediction model
+        :param configuration: MultiScaleFaceSearchConfiguration instance
+        """
+
+        self.image = image
+        self.model = model
+        self.configuration = configuration
+
+    def get_heatmap(self):
+        """
+        Returns heatmap
+        :return: 2D numpy array of same size as image used to construct class HeatmapComputer instance
+        """
+
+        heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
+
+        # Get smallest size at which we want to search for a face in the image
+        # smallest_face_size =
+
+        return heatmap
+
+
+
+
+
+
 def get_unique_face_detections(face_detections):
     """
     Given a list of FaceDetection objects, return only unique face detections, filtering out similar detections

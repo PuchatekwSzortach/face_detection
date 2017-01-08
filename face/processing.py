@@ -210,3 +210,17 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()
+
+
+def get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_image_ratio):
+    """
+    Given an image shape, minimum face size and minimum face to image ratio, compute smallest
+    expected face size for the image.
+    :param image_shape: tuple of integers
+    :param min_face_size: integer
+    :param min_face_to_image_ratio: float
+    :return: integer, larger of min_face_size and min(image_shape) * min_face_to_image_ratio
+    """
+
+    image_ratio_based_size = int(min(image_shape) * min_face_to_image_ratio)
+    return max(min_face_size, image_ratio_based_size)

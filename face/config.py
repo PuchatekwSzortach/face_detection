@@ -85,7 +85,8 @@ class MultiScaleFaceSearchConfiguration(FaceSearchConfiguration):
 # Default multi scale face search configuration
 multi_scale_face_search_config = MultiScaleFaceSearchConfiguration(
     crop_size=crop_size, stride=stride, batch_size=batch_size,
-    min_face_size=min_face_size, min_face_to_image_ratio=min_face_to_image_ratio)
+    min_face_size=min_face_size, min_face_to_image_ratio=min_face_to_image_ratio,
+    image_rescaling_ratio=image_rescaling_ratio)
 
 # Path to model file
 model_path = "../../data/faces/models/model.h5"
