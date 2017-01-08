@@ -154,9 +154,9 @@ def main():
 
     # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
-    # log_heatmaps(image_paths_file, logger)
+    log_heatmaps(image_paths_file, logger)
     # log_face_detections(image_paths_file, logger)
-    log_face_detections_multiscale(image_paths_file, logger)
+    # log_face_detections_multiscale(image_paths_file, logger)
 
 
 

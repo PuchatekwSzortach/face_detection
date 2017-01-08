@@ -132,6 +132,16 @@ def test_get_face_candidates_generator_raises_on_stride_larger_than_crop_size():
         next(generator)
 
 
+def test_get_face_candidates_generator_returns_no_batches_when_image_smaller_than_crops():
+
+    generator = face.detection.get_face_candidates_generator(
+        np.zeros(shape=[2, 2]), crop_size=4, stride=4, batch_size=4)
+
+    with pytest.raises(StopIteration):
+
+        next(generator)
+
+
 def test_get_face_candidates_generator_candidates_single_row_crops():
 
     image = np.arange(40).reshape([4, 10])

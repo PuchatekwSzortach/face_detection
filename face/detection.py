@@ -154,8 +154,14 @@ def get_face_candidates_generator(image, crop_size, stride, batch_size):
 
         y += stride
 
-    # Final batch
-    yield face_candidates
+    # Yield final batch if it is non-empty, else return
+    if len(face_candidates) > 0:
+
+        yield face_candidates
+
+    else:
+
+        return
 
 
 class SingleScaleHeatmapComputer:
@@ -184,13 +190,17 @@ class SingleScaleHeatmapComputer:
 
         heatmap = np.zeros(shape=self.image.shape[:2], dtype=np.float32)
 
-        face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
-        scores = self._get_candidate_scores(face_candidates)
+        face_candidates_generator = get_face_candidates_generator(
+            self.image, self.configuration.crop_size, self.configuration.stride, self.configuration.batch_size)
 
-        for face_candidate, score in zip(face_candidates, scores):
+        for candidates_batch in face_candidates_generator:
 
-            x_start, y_start, x_end, y_end = [int(value) for value in face_candidate.focus_coordinates.bounds]
-            heatmap[y_start:y_end, x_start:x_end] = score
+            scores = self._get_candidate_scores(candidates_batch)
+
+            for face_candidate, score in zip(candidates_batch, scores):
+
+                x_start, y_start, x_end, y_end = [int(value) for value in face_candidate.focus_coordinates.bounds]
+                heatmap[y_start:y_end, x_start:x_end] = score
 
         return heatmap
 
@@ -312,8 +322,26 @@ class FaceDetector:
         :return: a list of FaceDetection instances
         """
 
-        face_candidates = get_face_candidates(self.image, self.configuration.crop_size, self.configuration.stride)
-        scores = self._get_candidate_scores(face_candidates)
+        face_detections = []
+
+        face_candidates_generator = get_face_candidates_generator(
+            self.image, self.configuration.crop_size, self.configuration.stride, self.configuration.batch_size)
+
+        for candidates_batch in face_candidates_generator:
+
+            scores = self._get_candidate_scores(candidates_batch)
+            face_detections.extend(self._get_positive_detections(candidates_batch, scores))
+
+        return get_unique_face_detections(face_detections)
+
+    def _get_candidate_scores(self, face_candidates):
+
+        face_crops = [candidate.cropped_image for candidate in face_candidates]
+        scores = self.model.predict(np.array(face_crops), batch_size=self.configuration.batch_size)
+
+        return scores
+
+    def _get_positive_detections(self, face_candidates, scores):
 
         face_detections = []
 
@@ -324,14 +352,7 @@ class FaceDetector:
                 detection = FaceDetection(candidate.crop_coordinates, score)
                 face_detections.append(detection)
 
-        return get_unique_face_detections(face_detections)
-
-    def _get_candidate_scores(self, face_candidates):
-
-        face_crops = [candidate.cropped_image for candidate in face_candidates]
-        scores = self.model.predict(np.array(face_crops), batch_size=self.configuration.batch_size)
-
-        return scores
+        return face_detections
 
 
 class MultiScaleFaceDetector:
