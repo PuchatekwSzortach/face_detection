@@ -4,6 +4,7 @@ Module with geometry related functions, mostly relating to bounding boxes proces
 
 import shapely.geometry
 import shapely.affinity
+import cv2
 
 
 def get_bounding_box(left, top, width, height):
@@ -102,3 +103,14 @@ def flip_bounding_box_about_vertical_axis(bounding_box, image_shape):
     return shapely.geometry.box(image_shape[1] - bounds[0], bounds[1], image_shape[1] - bounds[2], bounds[3])
 
 
+def draw_bounding_box(image, bounding_box, color, thickness):
+    """
+    Draw bounding box in an image with specified color and thickness
+    :param image: numpy array
+    :param bounding_box: shapely.geometry.Polygon instance
+    :param color: (float, float, float) tuple
+    :param thickness: int
+    """
+
+    bounds = [int(value) for value in bounding_box.bounds]
+    cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=color, thickness=thickness)

@@ -65,49 +65,10 @@ class FaceDetection:
 
         return self.bounding_box.equals(other.bounding_box) and self.score == other.score
 
+    def get_scaled(self, scale):
 
-def get_face_candidates(image, crop_size, stride):
-    """
-    Given an image, crop size and stride, get list of face candidates - crops of input image
-    that will be examined for face presence. Each crop is of crop_size and crops are taken at stride distance from
-     upper left corner of one crop to next crop (thus crops might be overlapping if stride is smaller than crop_size).
-     Once all possible crops have been taken scanning image in one row, scanning proceeds from first column of
-     row stride away from current row.
-    :param image: image from which crops are to be taken
-    :param crop_size: size of each crop
-    :param stride: stride at which crops should be taken. Must be not larger than crop size.
-    :return: list of FaceCandidate objects
-    """
-
-    if crop_size < stride:
-
-        raise ValueError("Crop size ({}) must be not smaller than stride size ({})".format(crop_size, stride))
-
-    face_candidates = []
-
-    offset = (crop_size - stride) // 2
-
-    y = 0
-
-    while y + crop_size <= image.shape[0]:
-
-        x = 0
-
-        while x + crop_size <= image.shape[1]:
-
-            crop_coordinates = shapely.geometry.box(x, y, x + crop_size, y + crop_size)
-            cropped_image = image[y:y + crop_size, x:x + crop_size]
-
-            focus_coordinates = shapely.geometry.box(x + offset, y + offset, x + crop_size - offset, y + crop_size - offset)
-
-            candidate = FaceCandidate(crop_coordinates, cropped_image, focus_coordinates)
-            face_candidates.append(candidate)
-
-            x += stride
-
-        y += stride
-
-    return face_candidates
+        rescaled_bounding_box = face.geometry.get_scaled_bounding_box(self.bounding_box, scale)
+        return FaceDetection(rescaled_bounding_box, self.score)
 
 
 def get_face_candidates_generator(image, crop_size, stride, batch_size):
@@ -379,26 +340,29 @@ class MultiScaleFaceDetector:
         :return: a list of FaceDetection instances
         """
 
-        image = self._get_largest_scale_image()
+        current_scale = self._get_largest_scale()
+        image = face.processing.get_scaled_image(self.image, current_scale)
 
         detections = []
 
         while min(image.shape[:2]) > self.configuration.crop_size:
 
             current_scale_detections = FaceDetector(image, self.model, self.configuration).get_face_detections()
-            detections = get_unique_face_detections(detections + current_scale_detections)
+            rescaled_detections = [detection.get_scaled(1 / current_scale) for detection in current_scale_detections]
 
-            image = face.processing.get_scaled_image(image, self.configuration.image_rescaling_ratio)
+            detections.extend(rescaled_detections)
+
+            current_scale *= self.configuration.image_rescaling_ratio
+            image = face.processing.get_scaled_image(self.image, current_scale)
 
         return get_unique_face_detections(detections)
 
-    def _get_largest_scale_image(self):
+    def _get_largest_scale(self):
 
         # Get smallest size at which we want to search for a face in the image
         smallest_face_size = face.processing.get_smallest_expected_face_size(
             image_shape=self.image.shape, min_face_size=self.configuration.min_face_size,
             min_face_to_image_ratio=self.configuration.min_face_to_image_ratio)
 
-        scale = self.configuration.crop_size / smallest_face_size
+        return self.configuration.crop_size / smallest_face_size
 
-        return face.processing.get_scaled_image(self.image, scale)

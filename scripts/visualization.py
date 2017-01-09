@@ -17,6 +17,7 @@ import face.processing
 import face.models
 import face.config
 import face.detection
+import face.geometry
 
 
 def log_data_batches(data_generator, logger):
@@ -33,7 +34,6 @@ def log_data_batches(data_generator, logger):
 def log_crops_predictions(data_generator, logger):
 
     model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     for _ in range(8):
@@ -71,38 +71,6 @@ def log_heatmaps(image_paths_file, logger):
 def log_face_detections(image_paths_file, logger):
 
     model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    # model = face.models.get_medium_scale_model(face.config.image_shape)
-    model.load_weights(face.config.model_path)
-
-    paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
-    random.shuffle(paths)
-
-    counter = 0
-
-    while counter < 10:
-
-        path = paths.pop()
-        image = face.utilities.get_image(path)
-
-        # Only process images that aren't too small or too large
-        if 300 < image.shape[1] < 1000:
-
-            face_detections = face.detection.FaceDetector(
-                image, model, face.config.face_search_config).get_face_detections()
-
-            for face_detection in face_detections:
-
-                bounds = [int(value) for value in face_detection.bounding_box.bounds]
-                cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
-
-            logger.info(vlogging.VisualRecord("Detections", image * 255, str(image.shape)))
-            counter += 1
-
-
-def log_face_detections_multiscale(image_paths_file, logger):
-
-    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     paths = [path.strip() for path in face.utilities.get_file_lines(image_paths_file)]
@@ -117,8 +85,7 @@ def log_face_detections_multiscale(image_paths_file, logger):
 
         for face_detection in single_scale_face_detections:
 
-            bounds = [int(value) for value in face_detection.bounding_box.bounds]
-            cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
+            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
         multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
             image, model, face.config.multi_scale_face_search_config).get_faces_detections()
@@ -127,13 +94,42 @@ def log_face_detections_multiscale(image_paths_file, logger):
 
         for face_detection in multi_scale_face_detections:
 
-            bounds = [int(value) for value in face_detection.bounding_box.bounds]
+            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
-            cv2.rectangle(
-                multi_scale_image,
-                (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=(0, 1, 0), thickness=4)
+        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
+                                          "{} - {}".format(path, str(image.shape))))
 
-        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255], str(image.shape)))
+
+def debug_face_detections(logger):
+
+    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
+    model.load_weights(face.config.model_path)
+
+    paths = [
+        "../../data/faces/img_celeba/000336.jpg",
+        "../../data/faces/img_celeba/000362.jpg"
+    ]
+
+    for path in paths:
+
+        image = face.utilities.get_image(path)
+
+        single_scale_face_detections = face.detection.FaceDetector(
+            image, model, face.config.face_search_config).get_face_detections()
+
+        for face_detection in single_scale_face_detections:
+            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
+
+        multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
+            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
+
+        multi_scale_image = image.copy()
+
+        for face_detection in multi_scale_face_detections:
+            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
+
+        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
+                                          "{} - {}".format(path, str(image.shape))))
 
 
 def main():
@@ -154,9 +150,9 @@ def main():
 
     # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
-    log_heatmaps(image_paths_file, logger)
+    # log_heatmaps(image_paths_file, logger)
     # log_face_detections(image_paths_file, logger)
-    # log_face_detections_multiscale(image_paths_file, logger)
+    debug_face_detections(logger)
 
 
 
