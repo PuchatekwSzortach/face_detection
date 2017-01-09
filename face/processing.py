@@ -107,9 +107,9 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size, crop_size):
             index = 0
 
     # Shuffle within a batch
-    # batch = list(zip(images_batch, labels_batch))
-    # random.shuffle(batch)
-    # images_batch, labels_batch = zip(*batch)
+    batch = list(zip(images_batch, labels_batch))
+    random.shuffle(batch)
+    images_batch, labels_batch = zip(*batch)
 
     return np.array(images_batch), np.array(labels_batch)
 

@@ -144,7 +144,7 @@ def main():
     bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
 
     generator = face.data_generators.get_batches_generator(
-        image_paths_file, bounding_boxes_file, batch_size=face.config.crop_size, crop_size=face.config.crop_size)
+        image_paths_file, bounding_boxes_file, batch_size=8, crop_size=face.config.crop_size)
 
     log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
