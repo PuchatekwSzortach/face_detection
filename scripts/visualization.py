@@ -79,6 +79,7 @@ def log_face_detections(image_paths_file, logger):
     for path in tqdm.tqdm(paths[:10]):
 
         image = face.utilities.get_image(path)
+        multi_scale_image = image.copy()
 
         single_scale_face_detections = face.detection.FaceDetector(
             image, model, face.config.face_search_config).get_face_detections()
@@ -90,11 +91,9 @@ def log_face_detections(image_paths_file, logger):
         multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
             image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
-        multi_scale_image = image.copy()
-
         for face_detection in multi_scale_face_detections:
 
-            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
+            face.geometry.draw_bounding_box(multi_scale_image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
         logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
                                           "{} - {}".format(path, str(image.shape))))
@@ -110,9 +109,10 @@ def debug_face_detections(logger):
         "../../data/faces/img_celeba/000362.jpg"
     ]
 
-    for path in paths:
+    for path in tqdm.tqdm(paths):
 
         image = face.utilities.get_image(path)
+        multi_scale_image = image.copy()
 
         single_scale_face_detections = face.detection.FaceDetector(
             image, model, face.config.face_search_config).get_face_detections()
@@ -121,12 +121,10 @@ def debug_face_detections(logger):
             face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
         multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
-            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
-
-        multi_scale_image = image.copy()
+            multi_scale_image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
         for face_detection in multi_scale_face_detections:
-            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
+            face.geometry.draw_bounding_box(multi_scale_image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
         logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
                                           "{} - {}".format(path, str(image.shape))))
@@ -146,14 +144,13 @@ def main():
     bounding_boxes_file = os.path.join(data_directory, "training_bounding_boxes_list.txt")
 
     generator = face.data_generators.get_batches_generator(
-        image_paths_file, bounding_boxes_file, face.config.batch_size, face.config.crop_size)
+        image_paths_file, bounding_boxes_file, batch_size=face.config.crop_size, crop_size=face.config.crop_size)
 
-    # log_data_batches(generator, logger)
+    log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
     # log_face_detections(image_paths_file, logger)
-    debug_face_detections(logger)
-
+    # debug_face_detections(logger)
 
 
 if __name__ == "__main__":

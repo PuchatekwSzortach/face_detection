@@ -107,9 +107,9 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size, crop_size):
             index = 0
 
     # Shuffle within a batch
-    batch = list(zip(images_batch, labels_batch))
-    random.shuffle(batch)
-    images_batch, labels_batch = zip(*batch)
+    # batch = list(zip(images_batch, labels_batch))
+    # random.shuffle(batch)
+    # images_batch, labels_batch = zip(*batch)
 
     return np.array(images_batch), np.array(labels_batch)
 
@@ -140,7 +140,8 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     """
 
     face_crop = get_random_face_crop(image, face_bounding_box, crop_size)
-    non_face_crops = [get_random_non_face_crop(image, face_bounding_box, crop_size) for _ in range(3)]
+    non_face_crops = [get_random_non_face_crop(image, face_bounding_box, crop_size) for _ in range(2)] + \
+                     [get_random_face_part_crop(image, face_bounding_box, crop_size)]
 
     crops = [face_crop] + non_face_crops
     labels = [1, 0, 0, 0]
@@ -207,6 +208,45 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
         if are_coordinates_legal and is_iou_low:
 
             return image[y:y + crop_size, x:x + crop_size]
+
+    # We failed to find a good crop despite trying x times, throw
+    raise CropException()
+
+
+def get_random_face_part_crop(image, face_bounding_box, crop_size):
+    """
+    Return a random face part. Face part is defined as a random crop of image from within face_bounding_box
+    region that covers quarter of the area of the face_bounding_box. Cropped face part is rescaled so as
+     to match requested crop_size
+    :param image: input image containing face
+    :param face_bounding_box: region occupied by the face
+    :param crop_size: size of output image
+    :return: image representing random face part
+    """
+
+    bounds = face_bounding_box.bounds
+
+    # Try up to x times to get a good crop
+    for index in range(100):
+
+        face_width = int(bounds[2] - bounds[0])
+
+        x = int(bounds[0]) + random.randint(0, face_width)
+        y = int(bounds[1]) + random.randint(0, face_width)
+
+        sampling_width = random.randint(face_width // 4, face_width)
+
+        cropped_region = shapely.geometry.box(x, y, x + sampling_width, y + sampling_width)
+
+        are_coordinates_legal = x >= 0 and y >= 0 and \
+                                x + sampling_width < image.shape[1] and y + sampling_width < image.shape[0]
+
+        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.25
+
+        if are_coordinates_legal and is_iou_low:
+
+            crop = image[y:y + sampling_width, x:x + sampling_width]
+            return cv2.resize(crop, (crop_size, crop_size))
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()

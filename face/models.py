@@ -30,7 +30,7 @@ def get_pretrained_vgg_model(image_shape):
 
     model = keras.models.Model(input=input_layer, output=x)
 
-    adam = keras.optimizers.Adam(lr=0.00001)
+    adam = keras.optimizers.Adam(lr=0.0001)
     model.compile(optimizer=adam, loss='binary_crossentropy', metrics=['accuracy'])
 
     return model
