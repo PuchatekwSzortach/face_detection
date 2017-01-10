@@ -140,8 +140,12 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     """
 
     face_crop = get_random_face_crop(image, face_bounding_box, crop_size)
-    non_face_crops = [get_random_non_face_crop(image, face_bounding_box, crop_size) for _ in range(2)] + \
-                     [get_random_face_part_crop(image, face_bounding_box, crop_size)]
+
+    non_face_crops = [
+        get_random_non_face_crop(image, face_bounding_box, crop_size),
+        get_random_face_part_crop(image, face_bounding_box, crop_size),
+        get_random_small_scale_face_crop(image, face_bounding_box, crop_size)
+    ]
 
     crops = [face_crop] + non_face_crops
     labels = [1, 0, 0, 0]
@@ -246,6 +250,41 @@ def get_random_face_part_crop(image, face_bounding_box, crop_size):
         if are_coordinates_legal and is_iou_low:
 
             crop = image[y:y + sampling_width, x:x + sampling_width]
+            return cv2.resize(crop, (crop_size, crop_size))
+
+    # We failed to find a good crop despite trying x times, throw
+    raise CropException()
+
+
+def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
+    """
+    Get a random crop of area such that face forms a small part of it. This is to teach algorithm not to
+    recognize images in which face is too small as face, so that it learns to put bounding boxes only at the
+    scale the face is.
+    :param image: input image containing face
+    :param face_bounding_box: region occupied by the face
+    :param crop_size: size of output image
+    :return: image with a small face in it
+    """
+
+    bounds = face_bounding_box.bounds
+
+    # Try up to x times to get a good crop
+    for index in range(100):
+
+        x = int(bounds[0]) + random.randint(-2 * crop_size, 2 * crop_size)
+        y = int(bounds[1]) + random.randint(-2 * crop_size, 2 * crop_size)
+
+        cropped_region = shapely.geometry.box(x, y, x + (2 * crop_size), y + (2 * crop_size))
+
+        are_coordinates_legal = x >= 0 and y >= 0 and \
+                                x + (2 * crop_size) < image.shape[1] and y + (2 * crop_size) < image.shape[0]
+
+        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
+
+        if are_coordinates_legal and is_iou_low:
+
+            crop = image[y:y + (2 * crop_size), x:x + (2 * crop_size)]
             return cv2.resize(crop, (crop_size, crop_size))
 
     # We failed to find a good crop despite trying x times, throw
