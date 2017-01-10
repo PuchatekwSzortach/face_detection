@@ -275,16 +275,19 @@ def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
         x = int(bounds[0]) + random.randint(-2 * crop_size, 2 * crop_size)
         y = int(bounds[1]) + random.randint(-2 * crop_size, 2 * crop_size)
 
-        cropped_region = shapely.geometry.box(x, y, x + (2 * crop_size), y + (2 * crop_size))
+        x_end = x + (2 * crop_size)
+        y_end = y + (2 * crop_size)
+
+        cropped_region = shapely.geometry.box(x, y, x_end, y_end)
 
         are_coordinates_legal = x >= 0 and y >= 0 and \
-                                x + (2 * crop_size) < image.shape[1] and y + (2 * crop_size) < image.shape[0]
+                                x_end < image.shape[1] and y_end < image.shape[0]
 
         is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
 
         if are_coordinates_legal and is_iou_low:
 
-            crop = image[y:y + (2 * crop_size), x:x + (2 * crop_size)]
+            crop = image[y:y_end, x:x_end]
             return cv2.resize(crop, (crop_size, crop_size))
 
     # We failed to find a good crop despite trying x times, throw
