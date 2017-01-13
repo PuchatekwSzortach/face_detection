@@ -330,7 +330,10 @@ class MultiScaleFaceDetector:
         :param configuration: MultiScaleFaceSearchConfiguration instance
         """
 
-        self.image = image
+        # Scale image down if it is too large
+        self.input_image_scale = 1 if min(image.shape[:2]) < 500 else 500 / min(image.shape[:2])
+        self.image = face.processing.get_scaled_image(image, self.input_image_scale)
+
         self.model = model
         self.configuration = configuration
 
@@ -355,7 +358,9 @@ class MultiScaleFaceDetector:
             current_scale *= self.configuration.image_rescaling_ratio
             image = face.processing.get_scaled_image(self.image, current_scale)
 
-        return get_unique_face_detections(detections)
+        # Get unique detections and scale them as necessary, since input image might have been scaled
+        unique_detections = get_unique_face_detections(detections)
+        return [detection.get_scaled(1 / self.input_image_scale) for detection in unique_detections]
 
     def _get_largest_scale(self):
 

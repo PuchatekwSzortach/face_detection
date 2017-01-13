@@ -79,23 +79,15 @@ def log_face_detections(image_paths_file, logger):
     for path in tqdm.tqdm(paths[:10]):
 
         image = face.utilities.get_image(path)
-        multi_scale_image = image.copy()
 
-        single_scale_face_detections = face.detection.FaceDetector(
-            image, model, face.config.face_search_config).get_face_detections()
+        detections = face.detection.MultiScaleFaceDetector(
+            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
-        for face_detection in single_scale_face_detections:
+        for face_detection in detections:
 
             face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
-        multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
-            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
-
-        for face_detection in multi_scale_face_detections:
-
-            face.geometry.draw_bounding_box(multi_scale_image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
-
-        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
+        logger.info(vlogging.VisualRecord("Detections", image * 255,
                                           "{} - {}".format(path, str(image.shape))))
 
 
@@ -105,7 +97,7 @@ def debug_face_detections(logger):
     model.load_weights(face.config.model_path)
 
     paths = [
-        "../../data/faces/img_celeba/000336.jpg",
+        "../../data/faces/img_celeba/000460.jpg",
         "../../data/faces/img_celeba/000362.jpg"
     ]
 
@@ -146,10 +138,10 @@ def main():
     generator = face.data_generators.get_batches_generator(
         image_paths_file, bounding_boxes_file, batch_size=8, crop_size=face.config.crop_size)
 
-    log_data_batches(generator, logger)
+    # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
-    # log_face_detections(image_paths_file, logger)
+    log_face_detections(image_paths_file, logger)
     # debug_face_detections(logger)
 
 
