@@ -60,7 +60,7 @@ def log_heatmaps(image_paths_file, logger):
         image = face.utilities.get_image(path)
 
         heatmap = face.detection.HeatmapComputer(
-            image, model, face.config.multi_scale_face_search_config).get_heatmap()
+            image, model, face.config.face_search_config).get_heatmap()
 
         scaled_images = [255 * image, 255 * heatmap]
         scaled_images = [face.processing.scale_image_keeping_aspect_ratio(image, 200) for image in scaled_images]
@@ -81,7 +81,7 @@ def log_face_detections(image_paths_file, logger):
         image = face.utilities.get_image(path)
 
         detections = face.detection.FaceDetector(
-            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
+            image, model, face.config.face_search_config).get_faces_detections()
 
         for face_detection in detections:
 
@@ -106,7 +106,7 @@ def debug_face_detections(logger):
         image = face.utilities.get_image(path)
 
         detections = face.detection.FaceDetector(
-            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
+            image, model, face.config.face_search_config).get_faces_detections()
 
         for face_detection in detections:
             face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)

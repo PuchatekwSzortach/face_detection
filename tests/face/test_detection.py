@@ -179,7 +179,7 @@ def test_get_heatmap_single_batch():
     mock_model = mock.Mock()
     mock_model.predict.return_value = [0.2, 0.4, 0.6, 0.8]
 
-    configuration = face.config.FaceSearchConfiguration(crop_size=5, stride=4, batch_size=4)
+    configuration = face.config.SingleScaleFaceSearchConfiguration(crop_size=5, stride=4, batch_size=4)
 
     expected_heatmap = np.zeros(shape=[10, 10])
     expected_heatmap[:4, :4] = 0.2

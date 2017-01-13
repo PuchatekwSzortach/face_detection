@@ -21,9 +21,9 @@ image_shape = (crop_size, crop_size, 3)
 stride = 32
 
 
-class FaceSearchConfiguration:
+class SingleScaleFaceSearchConfiguration:
     """
-    A simple class that bundles together common face search parameters
+    A simple class that bundles together common face search parameters for single scale searches.
     """
 
     def __init__(self, crop_size, stride, batch_size):
@@ -40,7 +40,8 @@ class FaceSearchConfiguration:
 
 
 # Default face search configuration
-face_search_config = FaceSearchConfiguration(crop_size=crop_size, stride=stride, batch_size=batch_size)
+single_scale_face_search_config = SingleScaleFaceSearchConfiguration(
+    crop_size=crop_size, stride=stride, batch_size=batch_size)
 
 
 # Minimum size of a face, in pixels, we want to search for
@@ -54,7 +55,7 @@ min_face_to_image_ratio = 0.1
 image_rescaling_ratio = 0.8
 
 
-class MultiScaleFaceSearchConfiguration(FaceSearchConfiguration):
+class FaceSearchConfiguration(SingleScaleFaceSearchConfiguration):
     """
     A simple class that bundles together common multi scale face search parameters
     """
@@ -83,7 +84,7 @@ class MultiScaleFaceSearchConfiguration(FaceSearchConfiguration):
 
 
 # Default multi scale face search configuration
-multi_scale_face_search_config = MultiScaleFaceSearchConfiguration(
+face_search_config = FaceSearchConfiguration(
     crop_size=crop_size, stride=stride, batch_size=batch_size,
     min_face_size=min_face_size, min_face_to_image_ratio=min_face_to_image_ratio,
     image_rescaling_ratio=image_rescaling_ratio)
