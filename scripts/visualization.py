@@ -104,21 +104,14 @@ def debug_face_detections(logger):
     for path in tqdm.tqdm(paths):
 
         image = face.utilities.get_image(path)
-        multi_scale_image = image.copy()
 
-        single_scale_face_detections = face.detection.FaceDetector(
-            image, model, face.config.face_search_config).get_face_detections()
+        detections = face.detection.MultiScaleFaceDetector(
+            image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
-        for face_detection in single_scale_face_detections:
+        for face_detection in detections:
             face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
 
-        multi_scale_face_detections = face.detection.MultiScaleFaceDetector(
-            multi_scale_image, model, face.config.multi_scale_face_search_config).get_faces_detections()
-
-        for face_detection in multi_scale_face_detections:
-            face.geometry.draw_bounding_box(multi_scale_image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
-
-        logger.info(vlogging.VisualRecord("Detections", [image * 255, multi_scale_image * 255],
+        logger.info(vlogging.VisualRecord("Detections", image * 255,
                                           "{} - {}".format(path, str(image.shape))))
 
 
