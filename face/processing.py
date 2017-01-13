@@ -148,7 +148,6 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     ]
 
     crops = [face_crop] + non_face_crops
-
     labels = [1, 0, 0, 0]
 
     return crops, labels
@@ -172,16 +171,18 @@ def get_random_face_crop(image, face_bounding_box, crop_size):
         x = int(bounds[0]) + random.randint(-crop_size, crop_size)
         y = int(bounds[1]) + random.randint(-crop_size, crop_size)
 
-        cropped_region = shapely.geometry.box(x, y, x + crop_size, y + crop_size)
+        x_end = x + crop_size
+        y_end = y + crop_size
 
-        are_coordinates_legal = x >= 0 and y >= 0 and \
-                                x + crop_size < image.shape[1] and y + crop_size < image.shape[0]
+        cropped_region = shapely.geometry.box(x, y, x_end, y_end)
+
+        are_coordinates_legal = x >= 0 and y >= 0 and x_end < image.shape[1] and y_end < image.shape[0]
 
         is_iou_high = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) > 0.6
 
         if are_coordinates_legal and is_iou_high:
 
-            return image[y:y + crop_size, x:x + crop_size]
+            return image[y:y_end, x:x_end]
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()
@@ -203,7 +204,7 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
         x = random.randint(0, image.shape[1] - crop_size)
         y = random.randint(0, image.shape[0] - crop_size)
 
-        sampling_size = random.randint(0, min(image.shape[:2]))
+        sampling_size = random.randint(10, min(image.shape[:2]))
         x_end = x + sampling_size
         y_end = y + sampling_size
 
@@ -242,7 +243,7 @@ def get_random_face_part_crop(image, face_bounding_box, crop_size):
         x = int(bounds[0]) + random.randint(0, face_width)
         y = int(bounds[1]) + random.randint(0, face_width)
 
-        sampling_width = random.randint(face_width // 10, face_width)
+        sampling_width = random.randint(face_width // 5, face_width)
         x_end = x + sampling_width
         y_end = y + sampling_width
 
