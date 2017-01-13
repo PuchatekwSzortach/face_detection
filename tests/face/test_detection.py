@@ -193,52 +193,59 @@ def test_get_heatmap_single_batch():
     assert np.allclose(actual_heatmap, expected_heatmap)
 
 
-def test_get_unique_face_detections_one_group_only():
+class TestUniqueDetectionsComputer:
 
-    bounding_boxes = [
-        shapely.geometry.box(0, 0, 10, 10),
-        shapely.geometry.box(1, 1, 11, 11),
-        shapely.geometry.box(2, 2, 12, 12)
-    ]
+    def test_non_maximum_suppression_one_group_only(self):
 
-    face_detections = [
-        face.detection.FaceDetection(bounding_boxes[0], 0.9),
-        face.detection.FaceDetection(bounding_boxes[1], 0.98),
-        face.detection.FaceDetection(bounding_boxes[2], 0.95)
-    ]
+        bounding_boxes = [
+            shapely.geometry.box(0, 0, 10, 10),
+            shapely.geometry.box(1, 1, 11, 11),
+            shapely.geometry.box(2, 2, 12, 12)
+        ]
 
-    expected_results = [
-        face.detection.FaceDetection(bounding_boxes[1], 0.98)
-    ]
+        face_detections = [
+            face.detection.FaceDetection(bounding_boxes[0], 0.9),
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(bounding_boxes[2], 0.95)
+        ]
 
-    actual_results = face.detection.get_unique_face_detections(face_detections)
+        iou_threshold = 0.5
 
-    assert expected_results == actual_results
+        expected_results = [
+            face.detection.FaceDetection(bounding_boxes[1], 0.98)
+        ]
 
+        actual_results = face.detection.UniqueDetectionsComputer.non_maximum_suppression(
+            face_detections, iou_threshold)
 
-def test_get_unique_face_detections_two_groups():
+        assert expected_results == actual_results
 
-    bounding_boxes = [
-        shapely.geometry.box(0, 0, 10, 10),
-        shapely.geometry.box(1, 1, 11, 11),
-        shapely.geometry.box(2, 2, 12, 12),
-        shapely.geometry.box(100, 100, 110, 110),
-        shapely.geometry.box(101, 101, 111, 111)
-    ]
+    def test_non_maximum_suppression_two_groups(self):
 
-    face_detections = [
-        face.detection.FaceDetection(bounding_boxes[0], 0.9),
-        face.detection.FaceDetection(bounding_boxes[1], 0.98),
-        face.detection.FaceDetection(bounding_boxes[2], 0.95),
-        face.detection.FaceDetection(bounding_boxes[3], 0.9),
-        face.detection.FaceDetection(bounding_boxes[4], 0.95)
-    ]
+        bounding_boxes = [
+            shapely.geometry.box(0, 0, 10, 10),
+            shapely.geometry.box(1, 1, 11, 11),
+            shapely.geometry.box(2, 2, 12, 12),
+            shapely.geometry.box(100, 100, 110, 110),
+            shapely.geometry.box(101, 101, 111, 111)
+        ]
 
-    expected_results = [
-        face.detection.FaceDetection(bounding_boxes[1], 0.98),
-        face.detection.FaceDetection(bounding_boxes[4], 0.95)
-    ]
+        face_detections = [
+            face.detection.FaceDetection(bounding_boxes[0], 0.9),
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(bounding_boxes[2], 0.95),
+            face.detection.FaceDetection(bounding_boxes[3], 0.9),
+            face.detection.FaceDetection(bounding_boxes[4], 0.95)
+        ]
 
-    actual_results = face.detection.get_unique_face_detections(face_detections)
+        iou_threshold = 0.5
 
-    assert expected_results == actual_results
+        expected_results = [
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(bounding_boxes[4], 0.95)
+        ]
+
+        actual_results = face.detection.UniqueDetectionsComputer.non_maximum_suppression(
+            face_detections, iou_threshold)
+
+        assert expected_results == actual_results

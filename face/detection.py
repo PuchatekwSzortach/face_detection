@@ -224,39 +224,47 @@ class HeatmapComputer:
         return face.processing.get_scaled_image(self.image, scale)
 
 
-def get_unique_face_detections(face_detections):
+class UniqueDetectionsComputer:
     """
-    Given a list of FaceDetection objects, return only unique face detections, filtering out similar detections
-    so that for each group of similar detections only a single one remains in output list
-    :param face_detections: list of FaceDetection objects
-    :return: list of FaceDetection objects
+    A simple static class with different functions for computing unique detections
     """
 
-    unique_detections = []
+    @staticmethod
+    def non_maximum_suppression(face_detections, iou_threshold):
+        """
+        Given a list of FaceDetection objects, return only detections that
+        represent a local maximum.
+        :param face_detections: list of FaceDetection objects
+        :param iou_threshold: value above which IOU of two detections must be for them to be considered similar
+        :return: list of FaceDetection objects
+        """
 
-    for detection in face_detections:
+        unique_detections = []
 
-        unique_id = 0
-        similar_detection_found = False
+        for detection in face_detections:
 
-        while unique_id < len(unique_detections) and similar_detection_found is False:
+            unique_id = 0
+            similar_detection_found = False
 
-            unique_detection = unique_detections[unique_id]
+            while unique_id < len(unique_detections) and similar_detection_found is False:
 
-            if face.geometry.get_intersection_over_union(detection.bounding_box, unique_detection.bounding_box) > 0.3:
+                unique_detection = unique_detections[unique_id]
 
-                unique_detections[unique_id] = unique_detection \
-                    if unique_detection.score > detection.score else detection
+                if face.geometry.get_intersection_over_union(
+                        detection.bounding_box, unique_detection.bounding_box) > iou_threshold:
 
-                similar_detection_found = True
+                    unique_detections[unique_id] = unique_detection \
+                        if unique_detection.score > detection.score else detection
 
-            unique_id += 1
+                    similar_detection_found = True
 
-        if similar_detection_found is False:
+                unique_id += 1
 
-            unique_detections.append(detection)
+            if similar_detection_found is False:
 
-    return unique_detections
+                unique_detections.append(detection)
+
+        return unique_detections
 
 
 class SingleScaleFaceDetector:
