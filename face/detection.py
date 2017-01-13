@@ -259,9 +259,9 @@ def get_unique_face_detections(face_detections):
     return unique_detections
 
 
-class FaceDetector:
+class SingleScaleFaceDetector:
     """
-    Class for detecting faces in images. Given an image, prediction model and scanning parameters,
+    Class for detecting faces in images at a single scale. Given an image, prediction model and scanning parameters,
     returns a list of FaceDetection instances.
     """
 
@@ -316,9 +316,9 @@ class FaceDetector:
         return face_detections
 
 
-class MultiScaleFaceDetector:
+class FaceDetector:
     """
-    Class for detecting faces in images. Faces are search for at multiple scales,
+    Class for detecting faces in images. Faces are searched for at multiple scales,
      as per configuration parameters.
     """
 
@@ -350,9 +350,10 @@ class MultiScaleFaceDetector:
 
         while min(image.shape[:2]) > self.configuration.crop_size:
 
-            current_scale_detections = FaceDetector(image, self.model, self.configuration).get_face_detections()
-            rescaled_detections = [detection.get_scaled(1 / current_scale) for detection in current_scale_detections]
+            current_scale_detections = SingleScaleFaceDetector(
+                image, self.model, self.configuration).get_face_detections()
 
+            rescaled_detections = [detection.get_scaled(1 / current_scale) for detection in current_scale_detections]
             detections.extend(rescaled_detections)
 
             current_scale *= self.configuration.image_rescaling_ratio
@@ -370,4 +371,3 @@ class MultiScaleFaceDetector:
             min_face_to_image_ratio=self.configuration.min_face_to_image_ratio)
 
         return self.configuration.crop_size / smallest_face_size
-

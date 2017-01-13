@@ -80,7 +80,7 @@ def log_face_detections(image_paths_file, logger):
 
         image = face.utilities.get_image(path)
 
-        detections = face.detection.MultiScaleFaceDetector(
+        detections = face.detection.FaceDetector(
             image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
         for face_detection in detections:
@@ -105,7 +105,7 @@ def debug_face_detections(logger):
 
         image = face.utilities.get_image(path)
 
-        detections = face.detection.MultiScaleFaceDetector(
+        detections = face.detection.FaceDetector(
             image, model, face.config.multi_scale_face_search_config).get_faces_detections()
 
         for face_detection in detections:
