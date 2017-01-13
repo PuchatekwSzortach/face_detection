@@ -131,10 +131,10 @@ def main():
     generator = face.data_generators.get_batches_generator(
         image_paths_file, bounding_boxes_file, batch_size=8, crop_size=face.config.crop_size)
 
-    # log_data_batches(generator, logger)
+    log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
-    log_face_detections(image_paths_file, logger)
+    # log_face_detections(image_paths_file, logger)
     # debug_face_detections(logger)
 
 

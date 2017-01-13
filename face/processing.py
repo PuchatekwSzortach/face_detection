@@ -148,6 +148,7 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     ]
 
     crops = [face_crop] + non_face_crops
+
     labels = [1, 0, 0, 0]
 
     return crops, labels
@@ -176,7 +177,7 @@ def get_random_face_crop(image, face_bounding_box, crop_size):
         are_coordinates_legal = x >= 0 and y >= 0 and \
                                 x + crop_size < image.shape[1] and y + crop_size < image.shape[0]
 
-        is_iou_high = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) > 0.5
+        is_iou_high = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) > 0.6
 
         if are_coordinates_legal and is_iou_high:
 
@@ -189,7 +190,7 @@ def get_random_face_crop(image, face_bounding_box, crop_size):
 def get_random_non_face_crop(image, face_bounding_box, crop_size):
     """
     Given an image and face bounding box, return a random crop that has low IOU with face bounding box and
-    is of size crop_size x crop_size
+    is of size crop_size x crop_size. Crop is taken at a random scale and resized to be crop_size x crop_size.
     :param image: image
     :param face_bounding_box: bounding box of face
     :param crop_size: desired crop size
@@ -202,16 +203,19 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
         x = random.randint(0, image.shape[1] - crop_size)
         y = random.randint(0, image.shape[0] - crop_size)
 
-        cropped_region = shapely.geometry.box(x, y, x + crop_size, y + crop_size)
+        sampling_size = random.randint(0, min(image.shape[:2]))
+        x_end = x + sampling_size
+        y_end = y + sampling_size
 
-        are_coordinates_legal = x >= 0 and y >= 0 and \
-                                x + crop_size < image.shape[1] and y + crop_size < image.shape[0]
+        sampled_region = shapely.geometry.box(x, y, x_end, y_end)
 
-        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
+        are_coordinates_legal = x >= 0 and y >= 0 and x_end < image.shape[1] and y_end < image.shape[0]
+
+        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, sampled_region) < 0.6
 
         if are_coordinates_legal and is_iou_low:
 
-            return image[y:y + crop_size, x:x + crop_size]
+            return cv2.resize(image[y:y_end, x:x_end], (crop_size, crop_size))
 
     # We failed to find a good crop despite trying x times, throw
     raise CropException()
@@ -220,7 +224,7 @@ def get_random_non_face_crop(image, face_bounding_box, crop_size):
 def get_random_face_part_crop(image, face_bounding_box, crop_size):
     """
     Return a random face part. Face part is defined as a random crop of image from within face_bounding_box
-    region that covers quarter of the area of the face_bounding_box. Cropped face part is rescaled so as
+    region that has a small IOU with face bounding box. Cropped face part is rescaled so as
      to match requested crop_size
     :param image: input image containing face
     :param face_bounding_box: region occupied by the face
@@ -238,18 +242,19 @@ def get_random_face_part_crop(image, face_bounding_box, crop_size):
         x = int(bounds[0]) + random.randint(0, face_width)
         y = int(bounds[1]) + random.randint(0, face_width)
 
-        sampling_width = random.randint(face_width // 4, face_width)
+        sampling_width = random.randint(face_width // 10, face_width)
+        x_end = x + sampling_width
+        y_end = y + sampling_width
 
-        cropped_region = shapely.geometry.box(x, y, x + sampling_width, y + sampling_width)
+        cropped_region = shapely.geometry.box(x, y, x_end, y_end)
 
-        are_coordinates_legal = x >= 0 and y >= 0 and \
-                                x + sampling_width < image.shape[1] and y + sampling_width < image.shape[0]
+        are_coordinates_legal = x >= 0 and y >= 0 and x_end < image.shape[1] and y_end < image.shape[0]
 
-        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.25
+        is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
 
         if are_coordinates_legal and is_iou_low:
 
-            crop = image[y:y + sampling_width, x:x + sampling_width]
+            crop = image[y:y_end, x:x_end]
             return cv2.resize(crop, (crop_size, crop_size))
 
     # We failed to find a good crop despite trying x times, throw
@@ -259,7 +264,7 @@ def get_random_face_part_crop(image, face_bounding_box, crop_size):
 def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
     """
     Get a random crop of area such that face forms a small part of it. This is to teach algorithm not to
-    recognize images in which face is too small as face, so that it learns to put bounding boxes only at the
+    recognize images in which face is too small, so that it learns to put bounding boxes only at the
     scale the face is.
     :param image: input image containing face
     :param face_bounding_box: region occupied by the face
@@ -280,8 +285,7 @@ def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
 
         cropped_region = shapely.geometry.box(x, y, x_end, y_end)
 
-        are_coordinates_legal = x >= 0 and y >= 0 and \
-                                x_end < image.shape[1] and y_end < image.shape[0]
+        are_coordinates_legal = x >= 0 and y >= 0 and x_end < image.shape[1] and y_end < image.shape[0]
 
         is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
 
