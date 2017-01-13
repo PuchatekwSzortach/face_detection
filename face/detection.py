@@ -301,7 +301,7 @@ class SingleScaleFaceDetector:
             scores = self._get_candidate_scores(candidates_batch)
             face_detections.extend(self._get_positive_detections(candidates_batch, scores))
 
-        return get_unique_face_detections(face_detections)
+        return UniqueDetectionsComputer.non_maximum_suppression(face_detections, iou_threshold=0.3)
 
     def _get_candidate_scores(self, face_candidates):
 
@@ -368,7 +368,7 @@ class FaceDetector:
             image = face.processing.get_scaled_image(self.image, current_scale)
 
         # Get unique detections and scale them as necessary, since input image might have been scaled
-        unique_detections = get_unique_face_detections(detections)
+        unique_detections = UniqueDetectionsComputer.non_maximum_suppression(detections, iou_threshold=0.3)
         return [detection.get_scaled(1 / self.input_image_scale) for detection in unique_detections]
 
     def _get_largest_scale(self):
