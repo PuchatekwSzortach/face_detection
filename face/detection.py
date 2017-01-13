@@ -266,6 +266,67 @@ class UniqueDetectionsComputer:
 
         return unique_detections
 
+    @staticmethod
+    def averaging(face_detections, iou_threshold):
+        """
+        Given a list of FaceDetection objects, group detections that have high IOU threshold together, compute
+        their average and return averages of each group as unique detections. Averages have scores of the
+        highest scored detection of the group they come from.
+        :param face_detections: list of FaceDetection objects
+        :param iou_threshold: value above which IOU of two detections must be for them to be considered similar
+        :return: list of FaceDetection objects
+        """
+
+        groups_list = []
+
+        # First get groups of similar detections
+        for detection in face_detections:
+
+            group_found = False
+
+            group_id = 0
+
+            while group_id < len(groups_list) and group_found is False:
+
+                current_group = groups_list[group_id]
+                member_id = 0
+
+                while member_id < len(current_group) and group_found is False:
+
+                    group_member = current_group[member_id]
+
+                    if face.geometry.get_intersection_over_union(
+                            detection.bounding_box, group_member.bounding_box) > iou_threshold:
+
+                        current_group.append(detection)
+                        group_found = True
+
+                    member_id += 1
+
+                group_id += 1
+
+            if group_found is False:
+
+                group = [detection]
+                groups_list.append(group)
+
+        unique_detections = []
+
+        # Then get average detection for each group
+        for group in groups_list:
+
+            coordinates = np.array([detection.bounding_box.bounds for detection in group])
+            average_coordinates = np.mean(coordinates, axis=0)
+
+            int_coordinates = [int(coordinate) for coordinate in average_coordinates]
+
+            score = max([detection.score for detection in group])
+
+            average_detection = FaceDetection(shapely.geometry.box(*int_coordinates), score)
+            unique_detections.append(average_detection)
+
+        return unique_detections
+
 
 class SingleScaleFaceDetector:
     """
@@ -301,7 +362,7 @@ class SingleScaleFaceDetector:
             scores = self._get_candidate_scores(candidates_batch)
             face_detections.extend(self._get_positive_detections(candidates_batch, scores))
 
-        return UniqueDetectionsComputer.non_maximum_suppression(face_detections, iou_threshold=0.3)
+        return UniqueDetectionsComputer.averaging(face_detections, iou_threshold=0.2)
 
     def _get_candidate_scores(self, face_candidates):
 
@@ -368,7 +429,7 @@ class FaceDetector:
             image = face.processing.get_scaled_image(self.image, current_scale)
 
         # Get unique detections and scale them as necessary, since input image might have been scaled
-        unique_detections = UniqueDetectionsComputer.non_maximum_suppression(detections, iou_threshold=0.3)
+        unique_detections = UniqueDetectionsComputer.averaging(detections, iou_threshold=0.2)
         return [detection.get_scaled(1 / self.input_image_scale) for detection in unique_detections]
 
     def _get_largest_scale(self):

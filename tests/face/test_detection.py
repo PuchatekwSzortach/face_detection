@@ -10,6 +10,7 @@ import pytest
 
 import face.detection
 import face.config
+import face.geometry
 
 
 def test_get_face_candidates_generator_raises_on_stride_larger_than_crop_size():
@@ -246,6 +247,61 @@ class TestUniqueDetectionsComputer:
         ]
 
         actual_results = face.detection.UniqueDetectionsComputer.non_maximum_suppression(
+            face_detections, iou_threshold)
+
+        assert expected_results == actual_results
+
+    def test_averaging_one_group_only(self):
+
+        bounding_boxes = [
+            shapely.geometry.box(0, 0, 10, 10),
+            shapely.geometry.box(1, 1, 11, 11),
+            shapely.geometry.box(2, 2, 12, 12)
+        ]
+
+        face_detections = [
+            face.detection.FaceDetection(bounding_boxes[0], 0.9),
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(bounding_boxes[2], 0.95)
+        ]
+
+        iou_threshold = 0.5
+
+        expected_results = [
+            face.detection.FaceDetection(bounding_boxes[1], 0.98)
+        ]
+
+        actual_results = face.detection.UniqueDetectionsComputer.averaging(
+            face_detections, iou_threshold)
+
+        assert expected_results == actual_results
+
+    def test_averaging_two_groups(self):
+
+        bounding_boxes = [
+            shapely.geometry.box(0, 0, 10, 10),
+            shapely.geometry.box(1, 1, 11, 11),
+            shapely.geometry.box(2, 2, 12, 12),
+            shapely.geometry.box(100, 100, 110, 110),
+            shapely.geometry.box(102, 98, 108, 106)
+        ]
+
+        face_detections = [
+            face.detection.FaceDetection(bounding_boxes[0], 0.9),
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(bounding_boxes[2], 0.95),
+            face.detection.FaceDetection(bounding_boxes[3], 0.9),
+            face.detection.FaceDetection(bounding_boxes[4], 0.95)
+        ]
+
+        iou_threshold = 0.25
+
+        expected_results = [
+            face.detection.FaceDetection(bounding_boxes[1], 0.98),
+            face.detection.FaceDetection(shapely.geometry.box(101, 99, 109, 108), 0.95)
+        ]
+
+        actual_results = face.detection.UniqueDetectionsComputer.averaging(
             face_detections, iou_threshold)
 
         assert expected_results == actual_results
