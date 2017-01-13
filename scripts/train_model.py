@@ -19,8 +19,9 @@ def get_callbacks():
     model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True, verbose=1)
 
     reduce_learning_rate_callback = keras.callbacks.ReduceLROnPlateau(factor=0.2, patience=3, verbose=1)
+    early_stop_callback = keras.callbacks.EarlyStopping(patience=10, verbose=1)
 
-    return [model_checkpoint, reduce_learning_rate_callback]
+    return [model_checkpoint, reduce_learning_rate_callback, early_stop_callback]
 
 
 def main():
@@ -50,7 +51,7 @@ def main():
 
     model.fit_generator(
         training_data_generator, samples_per_epoch=face.utilities.get_file_lines_count(training_image_paths_file),
-        nb_epoch=20,
+        nb_epoch=100,
         validation_data=validation_data_generator,
         nb_val_samples=face.utilities.get_file_lines_count(validation_image_paths_file),
         callbacks=get_callbacks()
