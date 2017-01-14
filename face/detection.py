@@ -377,7 +377,7 @@ class SingleScaleFaceDetector:
 
         for candidate, score in zip(face_candidates, scores):
 
-            if score > 0.8:
+            if score > 0.9:
 
                 detection = FaceDetection(candidate.crop_coordinates, score)
                 face_detections.append(detection)
