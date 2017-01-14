@@ -98,7 +98,7 @@ def check_model_accuracy(image_paths, bounding_boxes_map, file_path=None):
         if face.geometry.get_intersection_over_union(image_bounding_box, face_bounding_box) > 0.01:
 
             value = 1 if does_model_detect_face_correctly(
-                image, face_bounding_box, model, face.config.single_scale_face_search_config) else 0
+                image, face_bounding_box, model, face.config.face_search_config) else 0
 
             detection_scores.append(value)
 
