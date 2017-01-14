@@ -114,8 +114,8 @@ def check_model_accuracy(image_paths, bounding_boxes_map, file_path=None):
 def main():
 
     # dataset = "large_dataset"
-    dataset = "medium_dataset"
-    # dataset = "small_dataset"
+    # dataset = "medium_dataset"
+    dataset = "small_dataset"
 
     data_directory = os.path.join(face.config.data_directory, dataset)
 
