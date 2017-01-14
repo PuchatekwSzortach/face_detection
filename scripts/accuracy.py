@@ -104,7 +104,7 @@ def check_model_accuracy(image_paths, bounding_boxes_map, file_path=None):
 
             if file_path is not None:
 
-                with open(face_bounding_box, mode="a") as file:
+                with open(file_path, mode="a") as file:
 
                     file.write("{}\n".format(np.mean(detection_scores)))
 
