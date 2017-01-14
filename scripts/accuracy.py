@@ -79,12 +79,11 @@ def does_model_detect_face_correctly(image, face_bounding_box, model, configurat
         return is_detection_correct
 
 
-def check_model_accuracy(image_paths, bounding_boxes_map):
+def check_model_accuracy(image_paths, bounding_boxes_map, file_path=None):
 
     detection_scores = []
 
     model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    # model = face.models.get_medium_scale_model(face.config.image_shape)
     model.load_weights(face.config.model_path)
 
     for path in tqdm.tqdm(image_paths):
@@ -102,6 +101,12 @@ def check_model_accuracy(image_paths, bounding_boxes_map):
                 image, face_bounding_box, model, face.config.single_scale_face_search_config) else 0
 
             detection_scores.append(value)
+
+            if file_path is not None:
+
+                with open(face_bounding_box, mode="a") as file:
+
+                    file.write("{}\n".format(np.mean(detection_scores)))
 
     print("Model accuracy is {}".format(np.mean(detection_scores)))
 
@@ -121,7 +126,7 @@ def main():
     bounding_boxes_map = face.geometry.get_bounding_boxes_map(bounding_boxes_file)
 
     # check_opencv_accuracy(image_paths, bounding_boxes_map)
-    check_model_accuracy(image_paths, bounding_boxes_map)
+    check_model_accuracy(image_paths, bounding_boxes_map, file_path="/tmp/face_accuracy_log.txt")
 
 
 if __name__ == "__main__":
