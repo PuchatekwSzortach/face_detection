@@ -103,7 +103,7 @@ class DatasetBuilder:
 
             filename = tokens[0]
 
-            integer_tokens = [int(token) for token in tokens[1:]]
+            integer_tokens = [round(token) for token in tokens[1:]]
             bounding_box = face.geometry.get_bounding_box(*integer_tokens)
 
             bounding_boxes_map[filename] = bounding_box
@@ -172,7 +172,7 @@ class DataSubsetBuilder:
 
             for image_path in image_paths:
 
-                bounds = [int(value) for value in bounding_boxes_map[image_path].bounds]
+                bounds = [round(value) for value in bounding_boxes_map[image_path].bounds]
 
                 x = bounds[0]
                 y = bounds[1]

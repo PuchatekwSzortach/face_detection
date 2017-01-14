@@ -160,7 +160,7 @@ class SingleScaleHeatmapComputer:
 
             for face_candidate, score in zip(candidates_batch, scores):
 
-                x_start, y_start, x_end, y_end = [int(value) for value in face_candidate.focus_coordinates.bounds]
+                x_start, y_start, x_end, y_end = [round(value) for value in face_candidate.focus_coordinates.bounds]
                 heatmap[y_start:y_end, x_start:x_end] = score
 
         return heatmap
@@ -318,7 +318,7 @@ class UniqueDetectionsComputer:
             coordinates = np.array([detection.bounding_box.bounds for detection in group])
             average_coordinates = np.mean(coordinates, axis=0)
 
-            int_coordinates = [int(coordinate) for coordinate in average_coordinates]
+            int_coordinates = [round(coordinate) for coordinate in average_coordinates]
 
             score = max([detection.score for detection in group])
 

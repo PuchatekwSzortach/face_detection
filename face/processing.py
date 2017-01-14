@@ -43,7 +43,7 @@ def scale_image_keeping_aspect_ratio(image, size):
     scale = size / smalled_dimension
 
     # Dimensions order has to be flipped for OpenCV
-    target_shape = (int(scale * image.shape[1]), int(scale * image.shape[0]))
+    target_shape = (round(scale * image.shape[1]), round(scale * image.shape[0]))
     return cv2.resize(image, target_shape)
 
 
@@ -123,7 +123,7 @@ def get_scaled_image(image, scale):
     :return: scaled image
     """
 
-    return cv2.resize(image, (int(scale * image.shape[1]), int(scale * image.shape[0])))
+    return cv2.resize(image, (round(scale * image.shape[1]), round(scale * image.shape[0])))
 
 
 def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
@@ -168,8 +168,8 @@ def get_random_face_crop(image, face_bounding_box, crop_size):
     # Try up to x times to get a good crop
     for index in range(100):
 
-        x = int(bounds[0]) + random.randint(-crop_size, crop_size)
-        y = int(bounds[1]) + random.randint(-crop_size, crop_size)
+        x = round(bounds[0]) + random.randint(-crop_size, crop_size)
+        y = round(bounds[1]) + random.randint(-crop_size, crop_size)
 
         x_end = x + crop_size
         y_end = y + crop_size
@@ -240,8 +240,8 @@ def get_random_face_part_crop(image, face_bounding_box, crop_size):
 
         face_width = int(bounds[2] - bounds[0])
 
-        x = int(bounds[0]) + random.randint(0, face_width)
-        y = int(bounds[1]) + random.randint(0, face_width)
+        x = round(bounds[0]) + random.randint(0, face_width)
+        y = round(bounds[1]) + random.randint(0, face_width)
 
         sampling_width = random.randint(face_width // 5, face_width)
         x_end = x + sampling_width
@@ -278,8 +278,8 @@ def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
     # Try up to x times to get a good crop
     for index in range(100):
 
-        x = int(bounds[0]) + random.randint(-2 * crop_size, 2 * crop_size)
-        y = int(bounds[1]) + random.randint(-2 * crop_size, 2 * crop_size)
+        x = round(bounds[0]) + random.randint(-2 * crop_size, 2 * crop_size)
+        y = round(bounds[1]) + random.randint(-2 * crop_size, 2 * crop_size)
 
         x_end = x + (2 * crop_size)
         y_end = y + (2 * crop_size)
@@ -309,5 +309,5 @@ def get_smallest_expected_face_size(image_shape, min_face_size, min_face_to_imag
     :return: integer, larger of min_face_size and min(image_shape) * min_face_to_image_ratio
     """
 
-    image_ratio_based_size = int(min(image_shape[:2]) * min_face_to_image_ratio)
+    image_ratio_based_size = round(min(image_shape[:2]) * min_face_to_image_ratio)
     return max(min_face_size, image_ratio_based_size)

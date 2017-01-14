@@ -112,5 +112,5 @@ def draw_bounding_box(image, bounding_box, color, thickness):
     :param thickness: int
     """
 
-    bounds = [int(value) for value in bounding_box.bounds]
+    bounds = [round(value) for value in bounding_box.bounds]
     cv2.rectangle(image, (bounds[0], bounds[1]), (bounds[2], bounds[3]), color=color, thickness=thickness)
