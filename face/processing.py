@@ -97,7 +97,6 @@ def get_data_batch(paths, bounding_boxes_map, index, batch_size, crop_size):
 
         # If image had an invalid bounding box, we want to skip over that image and go to next one
         except (InvalidBoundingBoxError, CropException):
-
             pass
 
         index += 1
@@ -148,7 +147,7 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     ]
 
     crops = [face_crop] + non_face_crops
-    labels = [1, 0, 0, 0]
+    labels = [1, 0, 0, 2]
 
     return crops, labels
 
@@ -281,12 +280,23 @@ def get_random_small_scale_face_crop(image, face_bounding_box, crop_size):
         x = round(bounds[0]) + random.randint(-2 * crop_size, 2 * crop_size)
         y = round(bounds[1]) + random.randint(-2 * crop_size, 2 * crop_size)
 
-        x_end = x + (2 * crop_size)
-        y_end = y + (2 * crop_size)
+        # Don't let x and y be negative
+        x = max(0, x)
+        y = max(0, y)
+
+        # Get a crop width that will not lead outside image border
+        crop_width = 2 * crop_size \
+            if x + (2 * crop_size) < image.shape[1] and y + (2 * crop_size) < image.shape[0]\
+            else min(image.shape[1] - x - 1, image.shape[0] - y - 1)
+
+        x_end = x + crop_width
+        y_end = y + crop_width
 
         cropped_region = shapely.geometry.box(x, y, x_end, y_end)
 
-        are_coordinates_legal = x >= 0 and y >= 0 and x_end < image.shape[1] and y_end < image.shape[0]
+        # Check coordinates would be legal and crop would be bigger than face bounding box
+        are_coordinates_legal = x >= 0 and x_end < image.shape[1] and \
+                                y >= 0 and y_end < image.shape[0] and crop_width > crop_size
 
         is_iou_low = face.geometry.get_intersection_over_union(face_bounding_box, cropped_region) < 0.5
 
