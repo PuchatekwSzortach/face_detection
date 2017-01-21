@@ -22,7 +22,7 @@ import face.geometry
 
 def log_data_batches(data_generator, logger):
 
-    for _ in range(4):
+    for _ in range(8):
 
         images, labels = next(data_generator)
 
@@ -91,29 +91,6 @@ def log_face_detections(image_paths_file, logger):
                                           "{} - {}".format(path, str(image.shape))))
 
 
-def debug_face_detections(logger):
-
-    model = face.models.get_pretrained_vgg_model(face.config.image_shape)
-    model.load_weights(face.config.model_path)
-
-    paths = [
-        "/Users/Kuba/Downloads/faces/pics3/5D8C6907.jpg"
-    ]
-
-    for path in tqdm.tqdm(paths):
-
-        image = face.utilities.get_image(path)
-
-        detections = face.detection.FaceDetector(
-            image, model, face.config.face_search_config).get_faces_detections()
-
-        for face_detection in detections:
-            face.geometry.draw_bounding_box(image, face_detection.bounding_box, color=(0, 1, 0), thickness=4)
-
-        logger.info(vlogging.VisualRecord("Detections", image * 255,
-                                          "{} - {}".format(path, str(image.shape))))
-
-
 def main():
 
     logger = face.utilities.get_logger(face.config.log_path)
@@ -133,8 +110,7 @@ def main():
     # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
-    # log_face_detections(image_paths_file, logger)
-    debug_face_detections(logger)
+    log_face_detections(image_paths_file, logger)
 
 
 if __name__ == "__main__":
