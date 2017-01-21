@@ -13,7 +13,7 @@ Following scripts are provided:
 
 ### scripts/download_data.py
 
-Downloads [Celeb Dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) and performs simple preprocessing. Please note that Celeb Dataset comes with its own license that you need to abide by to use it. With a little bit of work you could adapt this code to work with a different dataset.
+Downloads [Celeb Dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html) and performs simple preprocessing. Please note that Celeb Dataset comes with its own license that you need to abide by to use it. With a little bit of effort you could adapt this code to work with a different dataset.
 
 ### scripts/train_model.py
 
