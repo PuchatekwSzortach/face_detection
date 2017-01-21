@@ -97,8 +97,7 @@ def debug_face_detections(logger):
     model.load_weights(face.config.model_path)
 
     paths = [
-        "../../data/faces/img_celeba/000460.jpg",
-        "../../data/faces/img_celeba/000362.jpg"
+        "/Users/Kuba/Downloads/faces/pics3/5D8C6907.jpg"
     ]
 
     for path in tqdm.tqdm(paths):
@@ -131,11 +130,11 @@ def main():
     generator = face.data_generators.get_batches_generator(
         image_paths_file, bounding_boxes_file, batch_size=8, crop_size=face.config.crop_size)
 
-    log_data_batches(generator, logger)
+    # log_data_batches(generator, logger)
     # log_crops_predictions(generator, logger)
     # log_heatmaps(image_paths_file, logger)
     # log_face_detections(image_paths_file, logger)
-    # debug_face_detections(logger)
+    debug_face_detections(logger)
 
 
 if __name__ == "__main__":
