@@ -42,7 +42,6 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
     detection_scores = []
 
     filters_path = os.path.expanduser("~/anaconda3/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml")
-
     cascade_classifier = cv2.CascadeClassifier(filters_path)
 
     for path in tqdm.tqdm(image_paths):
@@ -53,13 +52,13 @@ def check_opencv_accuracy(image_paths, bounding_boxes_map):
         face_bounding_box = bounding_boxes_map[os.path.basename(path)]
 
         # Only try to search for faces if they are larger than 1% of image. If they are smaller,
-        # ground truth bounding box probably is incorrect
+        # ground truth bounding box is probably incorrect
         if face.geometry.get_intersection_over_union(image_bounding_box, face_bounding_box) > 0.01:
 
             value = 1 if does_opencv_detect_face_correctly(image, face_bounding_box, cascade_classifier) else 0
             detection_scores.append(value)
 
-    print("Opencv accuracy is {}".format(np.mean(detection_scores)))
+    print("OpenCV accuracy is {}".format(np.mean(detection_scores)))
 
 
 def does_model_detect_face_correctly(image, face_bounding_box, model, configuration):
