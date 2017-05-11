@@ -147,7 +147,7 @@ def get_image_crops_labels_batch(image, face_bounding_box, crop_size):
     ]
 
     crops = [face_crop] + non_face_crops
-    labels = [1, 0, 0, 2]
+    labels = [1, 0, 0, 0]
 
     return crops, labels
 
