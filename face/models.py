@@ -13,7 +13,7 @@ def get_pretrained_vgg_model(image_shape):
     :return: keras model
     """
 
-    expected_image_shape = (224, 224, 3)
+    expected_image_shape = (64, 64, 3)
 
     if image_shape != expected_image_shape:
 
@@ -25,7 +25,7 @@ def get_pretrained_vgg_model(image_shape):
     input_layer = keras.layers.Input(shape=image_shape)
 
     x = keras.applications.VGG16(include_top=False, weights='imagenet')(input_layer)
-    x = keras.layers.Convolution2D(1, 7, 7, activation='sigmoid', name='final_convolution')(x)
+    x = keras.layers.Convolution2D(1, 2, 2, activation='sigmoid', name='final_convolution')(x)
     x = keras.layers.Flatten()(x)
 
     model = keras.models.Model(input=input_layer, output=x)

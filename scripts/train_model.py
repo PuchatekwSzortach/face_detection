@@ -18,8 +18,8 @@ def get_callbacks():
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     model_checkpoint = keras.callbacks.ModelCheckpoint(filepath=model_path, save_best_only=True, verbose=1)
 
-    reduce_learning_rate_callback = keras.callbacks.ReduceLROnPlateau(factor=0.2, patience=3, verbose=1)
-    early_stop_callback = keras.callbacks.EarlyStopping(patience=10, verbose=1)
+    reduce_learning_rate_callback = keras.callbacks.ReduceLROnPlateau(factor=0.7, patience=2, verbose=1)
+    early_stop_callback = keras.callbacks.EarlyStopping(patience=8, verbose=1)
 
     return [model_checkpoint, reduce_learning_rate_callback, early_stop_callback]
 

@@ -12,13 +12,13 @@ log_path = "/tmp/faces/log.html"
 batch_size = 64
 
 # Size of crops data generators should return
-crop_size = 224
+crop_size = 64
 
 # Size of inputs models are trained on
 image_shape = (crop_size, crop_size, 3)
 
 # Stride to be used to sample crops from images
-stride = 32
+stride = 8
 
 
 class SingleScaleFaceSearchConfiguration:
